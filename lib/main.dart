@@ -10,7 +10,9 @@ import 'screens/ai_help_screen.dart';
 import 'screens/local_incidents_screen.dart';
 import 'screens/disaster_screen.dart';
 import 'screens/war_screen.dart';
+import 'screens/radio_screen.dart';
 import 'widgets/shared.dart';
+import 'widgets/app_drawer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,10 +39,12 @@ class EchoApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (_) => const SignupScreen(),
-        '/home': (_) => const AppShell(initialIndex: 0),
+        '/home': (_) => const AppShell(initialIndex: 2),
         '/map': (_) => const AppShell(initialIndex: 1),
-        '/sos': (_) => const AppShell(initialIndex: 2),
-        '/community': (_) => const AppShell(initialIndex: 3),
+        '/sos': (_) => const AppShell(initialIndex: 3),
+        '/ai_help': (_) => const AiHelpScreen(),
+        '/community': (_) => const AppShell(initialIndex: 4),
+        '/radio': (_) => const AppShell(initialIndex: 0),
         '/local': (_) => const LocalIncidentsScreen(),
         '/disaster': (_) => const DisasterScreen(),
         '/war': (_) => const WarScreen(),
@@ -64,8 +68,9 @@ class _AppShellState extends State<AppShell> {
 
   // Screens in the shell — order must match nav items
   static const _pages = [
-    HomeScreen(),
+    RadioScreen(),
     LiveMapScreen(),
+    HomeScreen(),
     SosScreen(),
     CommunityScreen(),
   ];
@@ -80,9 +85,17 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      body: IndexedStack(
-        index: _navIndex,
-        children: _pages,
+      drawer: const AppDrawer(),
+      body: Column(
+        children: [
+          const HybridLinkHeader(),
+          Expanded(
+            child: IndexedStack(
+              index: _navIndex,
+              children: _pages,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: ResQBottomNav(
         activeIndex: _navIndex,

@@ -114,43 +114,6 @@ class _AiHelpScreenState extends State<AiHelpScreen>
       drawer: const AppDrawer(),
       body: Column(
         children: [
-          ResQAppBar(
-            title: 'ECHO',
-            onMenu: () => _scaffoldKey.currentState?.openDrawer(),
-            actions: [
-              AnimatedBuilder(
-                animation: _pulseCtrl,
-                builder: (_, __) => Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: C.green
-                              .withOpacity(0.4 + _pulseCtrl.value * 0.6),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'AI ONLINE',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.5,
-                          color: C.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
           // Status bar
           Container(
             width: double.infinity,
@@ -291,9 +254,15 @@ class _AiHelpScreenState extends State<AiHelpScreen>
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/images/echo_logo.png',
-                  fit: BoxFit.contain,
+                child: ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  child: Image.asset(
+                    'assets/images/echo_logo.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
@@ -375,9 +344,15 @@ class _AiHelpScreenState extends State<AiHelpScreen>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/echo_logo.png',
-                fit: BoxFit.contain,
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(
+                  'assets/images/echo_logo.png',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),

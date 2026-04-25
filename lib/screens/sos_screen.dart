@@ -43,22 +43,7 @@ class _SosScreenState extends State<SosScreen>
       drawer: const AppDrawer(),
       body: Column(
         children: [
-          ResQAppBar(
-            title: 'ECHO',
-            onMenu: () => _scaffoldKey.currentState?.openDrawer(),
-            actions: [
-              AnimatedBuilder(
-                animation: _pulse,
-                builder: (_, __) => Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Icon(
-                    Icons.sensors,
-                    color: C.primary.withOpacity(0.4 + _pulse.value * 0.6),
-                  ),
-                ),
-              ),
-            ],
-          ),
+
           const NewsTicker(
             text:
                 'URGENT: SYSTEM OVERRIDE ACTIVE - EMERGENCY RESPONSE MODE ENABLED - COORDINATES LOCKING - PRIORITY 1 CONNECTION -',

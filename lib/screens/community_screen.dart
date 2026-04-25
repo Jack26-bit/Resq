@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
@@ -13,190 +15,293 @@ class CommunityScreen extends StatefulWidget {
 class _CommunityScreenState extends State<CommunityScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Future<List<dynamic>> fetchCrisisNews() async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://newsapi.org/v2/everything?q=emergency+India&apiKey=7f0270028acd441eae70a3bcf50a521f'));
+      if (response.statusCode == 200) {
+        return json.decode(response.body)['articles'] ?? [];
+      }
+    } catch (e) {
+      debugPrint('Error fetching news: $e');
+    }
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: C.bg,
       drawer: const AppDrawer(),
-      body: Column(
-        children: [
-          ResQAppBar(
-            title: 'ECHO',
-            onMenu: () => _scaffoldKey.currentState?.openDrawer(),
-            actions: const [
-              Padding(
-                  padding: EdgeInsets.only(right: 16),
-                  child: Icon(Icons.sensors, color: C.onSurfaceVar))
-            ],
-          ),
-          const NewsTicker(
-            text:
-                'COMMUNITY ALERT: SECTOR 7 POWER GRID OFFLINE  //  VOLUNTEER DISPATCH ACTIVE IN NORTH QUADRANT  //  CLOUD COVER 85%  //  BANDWIDTH RESTRICTED',
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 120),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Hero
-                  const Text('Peer\nPortal',
-                      style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontWeight: FontWeight.w900,
-                          fontSize: 52,
-                          letterSpacing: -2,
-                          height: 0.95,
-                          color: C.primary)),
-                  const SizedBox(height: 16),
-                  const Text(
-                      'Direct assistance synchronization for localized crises. Verified node communication only.',
-                      style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          color: C.onSurfaceVar,
-                          height: 1.5,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 32),
+      body: StreamBuilder<List<dynamic>>(
+        stream: Stream.fromFuture(fetchCrisisNews()),
+        builder: (context, snapshot) {
+          final articles = snapshot.data ?? [];
+          final itemCount = articles.length > 3 ? 3 : articles.length;
 
-                  // I Need Help
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamed('/sos'),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 36),
-                      decoration: BoxDecoration(
-                          color: C.primary,
-                          borderRadius: BorderRadius.circular(12)),
-                      child: const Column(
-                        children: [
-                          Icon(Icons.emergency, color: C.onPrimary, size: 40),
-                          SizedBox(height: 12),
-                          Text('I Need Help',
-                              style: TextStyle(
-                                  fontFamily: 'SpaceGrotesk',
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
-                                  letterSpacing: 3,
-                                  color: C.onPrimary)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // I Can Help
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 36),
-                      decoration: BoxDecoration(
-                          color: C.surfaceHigh,
-                          borderRadius: BorderRadius.circular(12)),
-                      child: const Column(
-                        children: [
-                          Icon(Icons.volunteer_activism,
-                              color: C.onSurface, size: 40),
-                          SizedBox(height: 12),
-                          Text('I Can Help',
-                              style: TextStyle(
-                                  fontFamily: 'SpaceGrotesk',
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
-                                  letterSpacing: 3,
-                                  color: C.onSurface)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 36),
-
-                  // Nearby Requests
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('NEARBY REQUESTS',
-                          style: TextStyle(
-                              fontFamily: 'SpaceGrotesk',
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 3.5,
-                              color: C.outline)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                            color: C.surfaceHighest,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: const Text('LIVE: 08',
-                            style: TextStyle(
+          return CustomScrollView(
+            slivers: [
+              // News ticker (shows only when data loaded and non-empty)
+              if (snapshot.connectionState != ConnectionState.waiting &&
+                  itemCount > 0)
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return Container(
+                        decoration: const BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(color: Color(0x1AFFFFFF))),
+                          color: Color(0x66131313),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
+                          leading: const Icon(Icons.warning, color: C.error),
+                          title: Text(
+                            articles[index]['title'] ?? 'CRISIS ALERT',
+                            style: const TextStyle(
                                 fontFamily: 'Inter',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: C.onSurface),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            (articles[index]['source']?['name'] ?? 'SYS_LOG')
+                                .toUpperCase(),
+                            style: const TextStyle(
+                                fontFamily: 'SpaceGrotesk',
                                 fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1,
-                                color: Colors.white)),
-                      ),
-                    ],
+                                letterSpacing: 1.5,
+                                color: C.primary),
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: itemCount,
                   ),
-                  const SizedBox(height: 20),
+                )
+              else if (snapshot.connectionState == ConnectionState.waiting)
+                const SliverToBoxAdapter(
+                  child: LinearProgressIndicator(
+                      color: C.primary, backgroundColor: C.surfaceMid),
+                ),
 
-                  _requestCard('0.4 KM AWAY • 12M AGO', 'Medical Supplies',
-                      'Requires insulin (Type 1) and sterile gauze. Sector 4 - Residential Block 12.',
-                      urgent: true),
-                  const SizedBox(height: 20),
-                  _requestCard('1.2 KM AWAY • 45M AGO', 'Potable Water',
-                      '5 Gallon emergency reserve needed for elderly resident center. No filtration available.'),
-                  const SizedBox(height: 20),
-                  _requestCard('2.8 KM AWAY • 1H AGO', 'Heavy Lifting',
-                      'Debris clearing required at main entrance of Community Shelter A. 2+ volunteers.'),
-                  const SizedBox(height: 32),
+              // Main scrollable content
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 120),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Hero
+                    const Text('Peer\nPortal',
+                        style: TextStyle(
+                            fontFamily: 'SpaceGrotesk',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 52,
+                            letterSpacing: -2,
+                            height: 0.95,
+                            color: C.primary)),
+                    const SizedBox(height: 16),
+                    const Text(
+                        'Direct assistance synchronization for localized crises. Verified node communication only.',
+                        style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            color: C.onSurfaceVar,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 32),
 
-                  // Map section
-                  const SectionLabel('TACTICAL MAP INSIGHT'),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                        color: C.surfaceMid,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Stack(
-                        children: [
-                          CustomPaint(
-                              painter: _CommunityMap(), size: Size.infinite),
-                          Container(color: const Color(0x66000000)),
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                      color: const Color(0xCC0A0A0A),
-                                      borderRadius: BorderRadius.circular(4)),
-                                  child: const Text('TAP TO VIEW FULL MAP',
+                    // I Need Help
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pushNamed('/sos'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        decoration: BoxDecoration(
+                            color: C.primary,
+                            borderRadius: BorderRadius.circular(12)),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.emergency, color: C.onPrimary, size: 40),
+                            SizedBox(height: 12),
+                            Text('I Need Help',
+                                style: TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 20,
+                                    letterSpacing: 3,
+                                    color: C.onPrimary)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // I Can Help
+                    GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        decoration: BoxDecoration(
+                            color: C.surfaceHigh,
+                            borderRadius: BorderRadius.circular(12)),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.volunteer_activism,
+                                color: C.onSurface, size: 40),
+                            SizedBox(height: 12),
+                            Text('I Can Help',
+                                style: TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 20,
+                                    letterSpacing: 3,
+                                    color: C.onSurface)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // AI Chat Bot
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pushNamed('/ai_help'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: C.surfaceLow,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: C.outlineVar.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: C.surfaceHigh,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.terminal, color: Colors.white, size: 28),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('AI Chat Bot',
                                       style: TextStyle(
                                           fontFamily: 'SpaceGrotesk',
-                                          fontSize: 11,
-                                          letterSpacing: 2,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 18,
                                           color: Colors.white)),
-                                ),
-                              ],
+                                  SizedBox(height: 4),
+                                  Text('Tactical INTEL & assistance module',
+                                      style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 12,
+                                          color: Color(0xFF888888))),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            const Icon(Icons.chevron_right, color: Color(0xFF666666)),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 36),
+
+                    // Nearby Requests
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('NEARBY REQUESTS',
+                            style: TextStyle(
+                                fontFamily: 'SpaceGrotesk',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 3.5,
+                                color: C.outline)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: C.surfaceHighest,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: const Text('LIVE: 08',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1,
+                                  color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    _requestCard('0.4 KM AWAY • 12M AGO', 'Medical Supplies',
+                        'Requires insulin (Type 1) and sterile gauze. Sector 4 - Residential Block 12.',
+                        urgent: true),
+                    const SizedBox(height: 20),
+                    _requestCard('1.2 KM AWAY • 45M AGO', 'Potable Water',
+                        '5 Gallon emergency reserve needed for elderly resident center. No filtration available.'),
+                    const SizedBox(height: 20),
+                    _requestCard('2.8 KM AWAY • 1H AGO', 'Heavy Lifting',
+                        'Debris clearing required at main entrance of Community Shelter A. 2+ volunteers.'),
+                    const SizedBox(height: 32),
+
+                    // Map section
+                    const SectionLabel('TACTICAL MAP INSIGHT'),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                          color: C.surfaceMid,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          children: [
+                            CustomPaint(
+                                painter: _CommunityMap(),
+                                size: Size.infinite),
+                            Container(color: const Color(0x66000000)),
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                        color: const Color(0xCC0A0A0A),
+                                        borderRadius:
+                                            BorderRadius.circular(4)),
+                                    child: const Text('TAP TO VIEW FULL MAP',
+                                        style: TextStyle(
+                                            fontFamily: 'SpaceGrotesk',
+                                            fontSize: 11,
+                                            letterSpacing: 2,
+                                            color: Colors.white)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

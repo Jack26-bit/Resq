@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 
@@ -14,6 +15,37 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
   String _filter = 'ALL';
   bool _isAlertsExpanded = false;
   final _filters = ['ALL', 'SOS', 'SHELTER', 'MEDICAL', 'FIRE'];
+
+  GoogleMapController? _mapController;
+  final LatLng _center = const LatLng(13.115403, 77.63577); // NMIT Campus Center
+  
+  List<Map<String, dynamic>> _manualMarkers = [];
+  String? _currentAddMode;
+
+  static const String _mapStyle = '''
+[
+  { "elementType": "geometry", "stylers": [{ "color": "#1a1a1a" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#746855" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#242424" }] },
+  { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "color": "#757575" }] },
+  { "featureType": "administrative.country", "elementType": "labels.text.fill", "stylers": [{ "color": "#9e9e9e" }] },
+  { "featureType": "administrative.land_parcel", "stylers": [{ "visibility": "off" }] },
+  { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{ "color": "#bdbdbd" }] },
+  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+  { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#181818" }] },
+  { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+  { "featureType": "poi.park", "elementType": "labels.text.stroke", "stylers": [{ "color": "#1b1b1b" }] },
+  { "featureType": "road", "elementType": "geometry.fill", "stylers": [{ "color": "#2c2c2c" }] },
+  { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#8a8a8a" }] },
+  { "featureType": "road.arterial", "elementType": "geometry", "stylers": [{ "color": "#373737" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#3c3c3c" }] },
+  { "featureType": "road.highway.controlled_access", "elementType": "geometry", "stylers": [{ "color": "#4e4e4e" }] },
+  { "featureType": "road.local", "elementType": "labels.text.fill", "stylers": [{ "color": "#616161" }] },
+  { "featureType": "transit", "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#3d3d3d" }] }
+]
+''';
 
   @override
   void initState() {
@@ -74,8 +106,65 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
           Expanded(
             child: Stack(
               children: [
-                Positioned.fill(child: CustomPaint(painter: _TacticalMapPainter())),
-                Container(color: const Color(0x66000000)),
+                Positioned.fill(
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(target: _center, zoom: 18),
+                    cameraTargetBounds: CameraTargetBounds(
+                      LatLngBounds(
+                        southwest: const LatLng(13.1100, 77.6300),
+                        northeast: const LatLng(13.1200, 77.6400),
+                      ),
+                    ),
+                    onMapCreated: (controller) {
+                      _mapController = controller;
+                      _mapController?.setMapStyle(_mapStyle);
+                    },
+                    onTap: (LatLng pos) {
+                      if (_currentAddMode != null) {
+                        setState(() {
+                          _manualMarkers.add({
+                            'id': 'MANUAL_${DateTime.now().millisecondsSinceEpoch}',
+                            'pos': pos,
+                            'type': _currentAddMode,
+                            'color': _currentAddMode == 'MEDICAL' ? C.primary : Colors.greenAccent,
+                            'label': 'Manual $_currentAddMode'
+                          });
+                          _currentAddMode = null; // Reset mode after adding
+                        });
+                      }
+                    },
+                    markers: _getMarkers(),
+                    circles: {
+                      Circle(
+                        circleId: const CircleId('SOS_ZONE'),
+                        center: _center,
+                        radius: 100,
+                        fillColor: const Color(0xFFFF0000).withValues(alpha: 0.1),
+                        strokeColor: const Color(0xFFFF0000),
+                        strokeWidth: 1,
+                      ),
+                    },
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.5),
+                      ],
+                      stops: const [0.0, 0.2, 0.8, 1.0],
+                    ),
+                  ),
+                ),
                 // Filter chips
                 Positioned(
                   top: 12, left: 0, right: 0,
@@ -106,18 +195,25 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
                 Positioned(
                   right: 12, top: 60,
                   child: Column(children: [
-                    _mapBtn(Icons.add),
+                    _mapBtn(Icons.add, () => _mapController?.animateCamera(CameraUpdate.zoomIn()), null),
                     const SizedBox(height: 8),
-                    _mapBtn(Icons.remove),
+                    _mapBtn(Icons.remove, () => _mapController?.animateCamera(CameraUpdate.zoomOut()), null),
                     const SizedBox(height: 8),
-                    Container(
-                      width: 40, height: 40,
-                      decoration: const BoxDecoration(color: C.primary, borderRadius: BorderRadius.all(Radius.circular(8))),
-                      child: const Icon(Icons.my_location, color: C.onPrimary, size: 20),
+                    GestureDetector(
+                      onTap: () => _mapController?.animateCamera(CameraUpdate.newLatLng(_center)),
+                      child: Container(
+                        width: 40, height: 40,
+                        decoration: const BoxDecoration(color: C.primary, borderRadius: BorderRadius.all(Radius.circular(8))),
+                        child: const Icon(Icons.my_location, color: C.onPrimary, size: 20),
+                      ),
                     ),
+                    const SizedBox(height: 16),
+                    _mapBtn(Icons.local_hospital, () => setState(() => _currentAddMode = 'MEDICAL'), _currentAddMode == 'MEDICAL'),
+                    const SizedBox(height: 8),
+                    _mapBtn(Icons.house, () => setState(() => _currentAddMode = 'SHELTER'), _currentAddMode == 'SHELTER'),
                   ]),
                 ),
-                ..._buildMarkers(context),
+
                 Positioned(
                   bottom: 0, left: 0, right: 0,
                   child: GestureDetector(
@@ -142,58 +238,43 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
     );
   }
 
-  Widget _mapBtn(IconData icon) => Container(
-        width: 40, height: 40,
-        decoration: BoxDecoration(color: const Color(0xCC2A2A2A), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: Colors.white, size: 20),
-      );
-
-  List<Widget> _buildMarkers(BuildContext ctx) {
-    final w = MediaQuery.of(ctx).size.width;
-    final markers = [
-      {'top': 0.30, 'left': 0.35, 'color': C.error, 'icon': Icons.warning, 'label': 'FIRE_INCIDENT [04]'},
-      {'top': 0.48, 'left': 0.60, 'color': C.primary, 'icon': Icons.medical_services, 'label': 'MEDICAL [02]'},
-      {'top': 0.20, 'left': 0.55, 'color': Colors.greenAccent, 'icon': Icons.home, 'label': 'SHELTER [A]'},
+  Set<Marker> _getMarkers() {
+    final campusPoints = [
+      {'id': 'MEDIC_MAIN', 'pos': const LatLng(13.115527, 77.635774), 'type': 'MEDICAL', 'color': C.primary, 'label': 'Health Centre'},
+      {'id': 'SHELTER_FOOD_COURT', 'pos': const LatLng(13.116362, 77.636407), 'type': 'SHELTER', 'color': Colors.greenAccent, 'label': 'Food Court (S1)'},
+      {'id': 'SHELTER_BLOCK', 'pos': const LatLng(13.115635, 77.634511), 'type': 'SHELTER', 'color': Colors.greenAccent, 'label': 'C-Block (S2)'},
     ];
-    return markers.map((m) {
-      final color = m['color'] as Color;
-      // height of map area ~500
-      const mapH = 500.0;
-      return AnimatedBuilder(
-        animation: _pulse,
-        builder: (_, __) => Positioned(
-          top: mapH * (m['top'] as double),
-          left: w * (m['left'] as double),
-          child: Column(
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 32 + _pulse.value * 8, height: 32 + _pulse.value * 8,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.15 + _pulse.value * 0.1)),
-                  ),
-                  Container(
-                    width: 28, height: 28,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: color,
-                        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 10)]),
-                    child: Icon(m['icon'] as IconData, color: Colors.black, size: 14),
-                  ),
-                ],
+
+    final allPoints = [...campusPoints, ..._manualMarkers];
+
+    return allPoints
+        .where((m) => _filter == 'ALL' || m['type'] == _filter)
+        .map((m) => Marker(
+              markerId: MarkerId(m['id'] as String),
+              position: m['pos'] as LatLng,
+              infoWindow: InfoWindow(title: m['label'] as String?),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                _getHueForColor(m['color'] as Color),
               ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: const Color(0xCC131313), borderRadius: BorderRadius.circular(3)),
-                child: Text(m['label'] as String,
-                    style: const TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1, color: Colors.white)),
-              ),
-            ],
-          ),
+            ))
+        .toSet();
+  }
+
+  double _getHueForColor(Color color) {
+    if (color == C.error) return BitmapDescriptor.hueRed;
+    if (color == C.primary) return BitmapDescriptor.hueAzure;
+    if (color == Colors.greenAccent) return BitmapDescriptor.hueGreen;
+    return BitmapDescriptor.hueRed;
+  }
+
+  Widget _mapBtn(IconData icon, VoidCallback onTap, bool? isActive) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 40, height: 40,
+          decoration: BoxDecoration(color: (isActive ?? false) ? C.primary : const Color(0xCC2A2A2A), borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, color: (isActive ?? false) ? C.onPrimary : Colors.white, size: 20),
         ),
       );
-    }).toList();
-  }
 
   Widget _buildBottomSheet() {
     return AnimatedContainer(

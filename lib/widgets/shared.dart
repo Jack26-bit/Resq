@@ -141,10 +141,11 @@ class ResQBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = [
-      {'icon': Icons.dashboard_outlined, 'activeIcon': Icons.dashboard, 'label': 'HOME'},
+      {'icon': Icons.cell_tower, 'activeIcon': Icons.cell_tower_rounded, 'label': 'RADIO'},
       {'icon': Icons.explore_outlined, 'activeIcon': Icons.explore, 'label': 'MAP'},
-      {'icon': Icons.sos_outlined, 'activeIcon': Icons.sos, 'label': 'SOS HELP'},
-      {'icon': Icons.psychology_outlined, 'activeIcon': Icons.psychology, 'label': 'AI HELP'},
+      {'icon': Icons.dashboard_outlined, 'activeIcon': Icons.dashboard, 'label': 'HOME'},
+      {'icon': Icons.sos_outlined, 'activeIcon': Icons.sos, 'label': 'SOS'},
+      {'icon': Icons.groups_outlined, 'activeIcon': Icons.groups, 'label': 'TEAM'},
     ];
 
     return Container(
@@ -191,6 +192,94 @@ class ResQBottomNav extends StatelessWidget {
                 ),
               );
             }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Hybrid Link Header ─────────────────────────────────────────────────────
+class HybridLinkHeader extends StatelessWidget {
+  const HybridLinkHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xB3131313),
+        border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
+        boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 20, offset: Offset(0, 10))],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Builder(
+                  builder: (ctx) => GestureDetector(
+                    onTap: () => Scaffold.of(ctx).openDrawer(),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.menu, color: Colors.white, size: 24),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.wifi_tethering, color: Color(0xFF00E5FF), size: 16),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'ECHO HYBRID LINK',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          letterSpacing: 2,
+                          color: Color(0xFF00E5FF),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.group, color: Color(0xFF00E5FF), size: 12),
+                            SizedBox(width: 4),
+                            Text(
+                              '14 PEERS NEARBY',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF00E5FF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Row(
+                  children: [
+                    Icon(Icons.cloud_done, color: Color(0xFF34C759), size: 16),
+                    SizedBox(width: 4),
+                    Icon(Icons.signal_cellular_alt, color: Color(0xFF00E5FF), size: 16),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
