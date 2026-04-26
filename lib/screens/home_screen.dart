@@ -319,6 +319,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           accent: const Color(0xFF34C759),
           route: '/local',
         ),
+        const SizedBox(height: 12),
+        _modeCard(
+          context,
+          label: 'OFFLINE MESH CHAT',
+          subtitle: 'Decentralized P2P bluetooth messaging',
+          icon: Icons.bluetooth_connected,
+          accent: const Color(0xFF007AFF),
+          route: '/mesh',
+        ),
       ],
     );
   }

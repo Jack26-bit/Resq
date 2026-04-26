@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
+import '../core/crypto/identity_manager.dart';
+import '../data/local/message_store.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -55,15 +57,22 @@ class _SosScreenState extends State<SosScreen>
               padding: const EdgeInsets.fromLTRB(24, 32, 24, 120),
               child: Column(
                 children: [
-                  const Text(
-                    'Report SOS',
-                    style: TextStyle(
-                      fontFamily: 'SpaceGrotesk',
-                      fontWeight: FontWeight.w900,
-                      fontSize: 48,
-                      letterSpacing: -2,
-                      color: Colors.white,
-                      height: 1,
+                  GestureDetector(
+                    onDoubleTap: () async {
+                      // We use doubleTap as Flutter doesn't have native tripleTap.
+                      // Alternatively, implement a tap counter.
+                      await _emergencyWipe();
+                    },
+                    child: const Text(
+                      'Report SOS',
+                      style: TextStyle(
+                        fontFamily: 'SpaceGrotesk',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 48,
+                        letterSpacing: -2,
+                        color: Colors.white,
+                        height: 1,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -435,6 +444,23 @@ class _SosScreenState extends State<SosScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _emergencyWipe() async {
+    // Perform emergency data wipe
+    await IdentityManager().wipeData();
+    MessageStore().wipeAllData();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'EMERGENCY WIPE EXECUTED. ALL LOCAL DATA DESTROYED.',
+          style: TextStyle(fontFamily: 'SpaceGrotesk', fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.redAccent,
       ),
     );
   }

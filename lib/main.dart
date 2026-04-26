@@ -13,6 +13,7 @@ import 'screens/local_incidents_screen.dart';
 import 'screens/disaster_screen.dart';
 import 'screens/war_screen.dart';
 import 'screens/radio_screen.dart';
+import 'screens/mesh_chat_screen.dart';
 import 'widgets/shared.dart';
 import 'widgets/app_drawer.dart';
 
@@ -53,6 +54,7 @@ class EchoApp extends StatelessWidget {
         '/local': (_) => const LocalIncidentsScreen(),
         '/disaster': (_) => const DisasterScreen(),
         '/war': (_) => const WarScreen(),
+        '/mesh': (_) => const MeshChatScreen(),
       },
     );
   }
