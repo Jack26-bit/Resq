@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 
@@ -19,7 +20,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
   GoogleMapController? _mapController;
   final LatLng _center = const LatLng(13.115403, 77.63577); // NMIT Campus Center
   
-  List<Map<String, dynamic>> _manualMarkers = [];
+  final List<Map<String, dynamic>> _manualMarkers = [];
   String? _currentAddMode;
 
   static const String _mapStyle = '''
@@ -107,47 +108,74 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(target: _center, zoom: 18),
-                    cameraTargetBounds: CameraTargetBounds(
-                      LatLngBounds(
-                        southwest: const LatLng(13.1100, 77.6300),
-                        northeast: const LatLng(13.1200, 77.6400),
-                      ),
-                    ),
-                    onMapCreated: (controller) {
-                      _mapController = controller;
-                      _mapController?.setMapStyle(_mapStyle);
-                    },
-                    onTap: (LatLng pos) {
-                      if (_currentAddMode != null) {
-                        setState(() {
-                          _manualMarkers.add({
-                            'id': 'MANUAL_${DateTime.now().millisecondsSinceEpoch}',
-                            'pos': pos,
-                            'type': _currentAddMode,
-                            'color': _currentAddMode == 'MEDICAL' ? C.primary : Colors.greenAccent,
-                            'label': 'Manual $_currentAddMode'
-                          });
-                          _currentAddMode = null; // Reset mode after adding
-                        });
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('sos_reports').snapshots(),
+                    builder: (context, snapshot) {
+                      Set<Marker> firestoreMarkers = {};
+                      if (snapshot.hasData) {
+                        for (var doc in snapshot.data!.docs) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          if (data['location'] != null && data['location']['latitude'] != null && data['location']['longitude'] != null) {
+                            final lat = (data['location']['latitude'] as num).toDouble();
+                            final lng = (data['location']['longitude'] as num).toDouble();
+                            firestoreMarkers.add(Marker(
+                              markerId: MarkerId(doc.id),
+                              position: LatLng(lat, lng),
+                              infoWindow: InfoWindow(title: data['criticality']?.toString() ?? 'SOS'),
+                              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                            ));
+                          }
+                        }
                       }
-                    },
-                    markers: _getMarkers(),
-                    circles: {
-                      Circle(
-                        circleId: const CircleId('SOS_ZONE'),
-                        center: _center,
-                        radius: 100,
-                        fillColor: const Color(0xFFFF0000).withValues(alpha: 0.1),
-                        strokeColor: const Color(0xFFFF0000),
-                        strokeWidth: 1,
-                      ),
-                    },
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
-                    mapToolbarEnabled: false,
+                      
+                      final allMarkers = <Marker>{
+                        ..._getMarkers(),
+                        ...firestoreMarkers,
+                      };
+
+                      return GoogleMap(
+                        initialCameraPosition: CameraPosition(target: _center, zoom: 18),
+                        cameraTargetBounds: CameraTargetBounds(
+                          LatLngBounds(
+                            southwest: const LatLng(13.1100, 77.6300),
+                            northeast: const LatLng(13.1200, 77.6400),
+                          ),
+                        ),
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          _mapController?.setMapStyle(_mapStyle);
+                        },
+                        onTap: (LatLng pos) {
+                          if (_currentAddMode != null) {
+                            setState(() {
+                              _manualMarkers.add({
+                                'id': 'MANUAL_${DateTime.now().millisecondsSinceEpoch}',
+                                'pos': pos,
+                                'type': _currentAddMode,
+                                'color': _currentAddMode == 'MEDICAL' ? C.primary : Colors.greenAccent,
+                                'label': 'Manual $_currentAddMode'
+                              });
+                              _currentAddMode = null; // Reset mode after adding
+                            });
+                          }
+                        },
+                        markers: allMarkers,
+                        circles: {
+                          Circle(
+                            circleId: const CircleId('SOS_ZONE'),
+                            center: _center,
+                            radius: 100,
+                            fillColor: const Color(0xFFFF0000).withValues(alpha: 0.1),
+                            strokeColor: const Color(0xFFFF0000),
+                            strokeWidth: 1,
+                          ),
+                        },
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        mapToolbarEnabled: false,
+                      );
+                    }
                   ),
                 ),
                 Container(
@@ -355,12 +383,20 @@ class _TacticalMapPainter extends CustomPainter {
         Paint()..color = const Color(0xFF0A0A0A));
     // Grid
     final gridP = Paint()..color = const Color(0xFF181818)..strokeWidth = 1;
-    for (double x = 0; x < size.width; x += 40) canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridP);
-    for (double y = 0; y < size.height; y += 40) canvas.drawLine(Offset(0, y), Offset(size.width, y), gridP);
+    for (double x = 0; x < size.width; x += 40) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridP);
+    }
+    for (double y = 0; y < size.height; y += 40) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridP);
+    }
     // Thicker major grid
     final major = Paint()..color = const Color(0xFF202020)..strokeWidth = 1.5;
-    for (double x = 0; x < size.width; x += 120) canvas.drawLine(Offset(x, 0), Offset(x, size.height), major);
-    for (double y = 0; y < size.height; y += 120) canvas.drawLine(Offset(0, y), Offset(size.width, y), major);
+    for (double x = 0; x < size.width; x += 120) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), major);
+    }
+    for (double y = 0; y < size.height; y += 120) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), major);
+    }
     // Red flood zone
     canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.4), 80,
         Paint()..color = const Color(0x1AFF453A));

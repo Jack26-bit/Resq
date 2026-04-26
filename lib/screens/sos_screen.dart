@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'smart_scan_screen.dart';
+import '../services/offline_mesh_service.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -19,6 +22,11 @@ class _SosScreenState extends State<SosScreen>
 
   final _types = ['Medical', 'Fire', 'Structural', 'Trapped'];
 
+  // ML Kit Smart Scan results
+  ScanResults? _scanResults;
+  bool _hasScanData = false;
+  bool _isSending = false;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +43,44 @@ class _SosScreenState extends State<SosScreen>
     super.dispose();
   }
 
+  Future<void> _openSmartScan() async {
+    final results = await Navigator.of(context).push<ScanResults>(
+      MaterialPageRoute(builder: (_) => const SmartScanScreen()),
+    );
+    if (results != null && mounted) {
+      setState(() {
+        _scanResults = results;
+        _hasScanData = true;
+      });
+      // Auto-fill the description with scan summary
+      if (_desc.text.isEmpty) {
+        _desc.text = results.summary;
+      } else {
+        _desc.text = '${_desc.text}\n\n[ML SCAN] ${results.summary}';
+      }
+      // Try to auto-select criticality from detections
+      _autoSelectCriticality(results);
+    }
+  }
+
+  void _autoSelectCriticality(ScanResults results) {
+    for (final log in results.log) {
+      final lower = log.toLowerCase();
+      if (lower.contains('structural') || lower.contains('debris')) {
+        setState(() => _selected = 'Structural');
+        return;
+      }
+      if (lower.contains('person') || lower.contains('clothing')) {
+        setState(() => _selected = 'Trapped');
+        return;
+      }
+      if (lower.contains('supplies') || lower.contains('food')) {
+        setState(() => _selected = 'Medical');
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +89,6 @@ class _SosScreenState extends State<SosScreen>
       drawer: const AppDrawer(),
       body: Column(
         children: [
-
           const NewsTicker(
             text:
                 'URGENT: SYSTEM OVERRIDE ACTIVE - EMERGENCY RESPONSE MODE ENABLED - COORDINATES LOCKING - PRIORITY 1 CONNECTION -',
@@ -79,6 +124,16 @@ class _SosScreenState extends State<SosScreen>
                   const SizedBox(height: 32),
                   _locationCard(),
                   const SizedBox(height: 20),
+
+                  // ── ML Kit Smart Scan Section ──
+                  _smartScanSection(),
+                  const SizedBox(height: 20),
+
+                  // ── Scan Results (if available) ──
+                  if (_hasScanData && _scanResults != null)
+                    _scanResultsCard(),
+                  if (_hasScanData) const SizedBox(height: 20),
+
                   _descriptionField(),
                   const SizedBox(height: 20),
                   Row(
@@ -94,36 +149,49 @@ class _SosScreenState extends State<SosScreen>
                   _criticalitySection(),
                   const SizedBox(height: 28),
                   GestureDetector(
-                    onTap: () => _showSent(context),
+                    onTap: _isSending ? null : _submitSOS,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       decoration: BoxDecoration(
-                        color: C.primary,
+                        color: _isSending ? C.surfaceHigh : C.primary,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.1),
-                            blurRadius: 50,
-                          )
-                        ],
+                        boxShadow: _isSending
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.1),
+                                  blurRadius: 50,
+                                )
+                              ],
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Send SOS',
-                            style: TextStyle(
-                              fontFamily: 'SpaceGrotesk',
-                              fontWeight: FontWeight.w900,
-                              fontSize: 22,
-                              color: C.onPrimary,
+                      child: _isSending
+                          ? const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: C.primary,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Send SOS',
+                                  style: TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 22,
+                                    color: C.onPrimary,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Icon(Icons.send, color: C.onPrimary, size: 22),
+                              ],
                             ),
-                          ),
-                          SizedBox(width: 12),
-                          Icon(Icons.send, color: C.onPrimary, size: 22),
-                        ],
-                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -142,6 +210,191 @@ class _SosScreenState extends State<SosScreen>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── ML Kit Smart Scan Button ──────────────────────────────────────────────
+  Widget _smartScanSection() {
+    return GestureDetector(
+      onTap: _openSmartScan,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF00E5FF).withOpacity(0.12),
+              const Color(0xFF00E5FF).withOpacity(0.04),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: const Color(0xFF00E5FF).withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.radar_rounded,
+                  color: Color(0xFF00E5FF), size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'SMART SCAN',
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          letterSpacing: 1,
+                          color: Color(0xFF00E5FF),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ML KIT',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                            color: Color(0xFF00E5FF),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _hasScanData
+                        ? 'Scan complete — ${_scanResults!.detections.length} object(s) detected'
+                        : 'Scan environment to auto-detect hazards',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: _hasScanData
+                          ? const Color(0xFF34C759)
+                          : C.onSurfaceVar,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              _hasScanData ? Icons.check_circle : Icons.chevron_right,
+              color:
+                  _hasScanData ? const Color(0xFF34C759) : const Color(0xFF00E5FF),
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Scan Results Card ─────────────────────────────────────────────────────
+  Widget _scanResultsCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: C.surfaceLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.analytics_outlined,
+                  color: Color(0xFF00E5FF), size: 16),
+              const SizedBox(width: 8),
+              const Text(
+                'DETECTION RESULTS',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.5,
+                  color: Color(0xFF00E5FF),
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _scanResults = null;
+                    _hasScanData = false;
+                  });
+                },
+                child: const Icon(Icons.close, color: C.outline, size: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ..._scanResults!.log.take(5).map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF00E5FF),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          entry,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: C.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          if (_scanResults!.log.length > 5)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                '+${_scanResults!.log.length - 5} more detection(s)',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  color: C.outline,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -178,9 +431,9 @@ class _SosScreenState extends State<SosScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'GEO-LOCATION ACTIVE',
                           style: TextStyle(
@@ -397,7 +650,69 @@ class _SosScreenState extends State<SosScreen>
     );
   }
 
+  Future<void> _submitSOS() async {
+    setState(() => _isSending = true);
+
+    try {
+      final docData = {
+        'timestamp': FieldValue.serverTimestamp(),
+        'description': _desc.text,
+        'criticality': _selected,
+        'location': {
+          'latitude': 34.0522, // Mocked for MVP
+          'longitude': -118.2437,
+        },
+        'ml_scan_data': _hasScanData && _scanResults != null
+            ? {
+                'summary': _scanResults!.summary,
+                'log': _scanResults!.log,
+              }
+            : null,
+        'status': 'PENDING_RESPONSE',
+      };
+
+      final offlineService = OfflineMeshService();
+      if (await offlineService.isOffline()) {
+        final localId = 'OFFLINE_${DateTime.now().millisecondsSinceEpoch}';
+        // Need to remove FieldValue.serverTimestamp() since JSON encode will fail on FieldValue
+        docData['timestamp'] = DateTime.now().toIso8601String(); 
+        await offlineService.queueSosReport(localId, docData);
+      } else {
+        await FirebaseFirestore.instance.collection('sos_reports').add(docData);
+        offlineService.syncOfflineData(); // Fire and forget sync
+      }
+
+      if (mounted) {
+        setState(() => _isSending = false);
+        _desc.clear();
+        setState(() {
+          _hasScanData = false;
+          _scanResults = null;
+        });
+        _showSent(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSending = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send SOS: $e'),
+            backgroundColor: C.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _showSent(BuildContext context) {
+    // Build the detail message
+    String detail =
+        'Your emergency signal has been sent to tactical command. A response team is being dispatched to your location.';
+    if (_hasScanData && _scanResults != null) {
+      detail +=
+          '\n\nML Kit detected ${_scanResults!.detections.length} object(s) in your environment. This data has been included in your report.';
+    }
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -411,9 +726,9 @@ class _SosScreenState extends State<SosScreen>
             color: C.primary,
           ),
         ),
-        content: const Text(
-          'Your emergency signal has been sent to tactical command. A response team is being dispatched to your location.',
-          style: TextStyle(
+        content: Text(
+          detail,
+          style: const TextStyle(
             fontFamily: 'Inter',
             color: C.onSurfaceVar,
             height: 1.5,
@@ -423,7 +738,6 @@ class _SosScreenState extends State<SosScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.of(context).pop();
             },
             child: const Text(
               'ACKNOWLEDGE',

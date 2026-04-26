@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -17,8 +19,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   Future<List<dynamic>> fetchCrisisNews() async {
     try {
+      final apiKey = dotenv.env['NEWS_API_KEY'] ?? '';
       final response = await http.get(Uri.parse(
-          'https://newsapi.org/v2/everything?q=emergency+India&apiKey=7f0270028acd441eae70a3bcf50a521f'));
+          'https://newsapi.org/v2/everything?q=emergency+India&apiKey=$apiKey'));
       if (response.statusCode == 200) {
         return json.decode(response.body)['articles'] ?? [];
       }
@@ -213,6 +216,73 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         ),
                       ),
                     ),
+                    // BigQuery Export Test
+                    const SectionLabel('BIGQUERY EXPORT TEST'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () async {
+                              try {
+                                await FirebaseFirestore.instance.collection('posts').doc('bigquery-mirror-test').set({
+                                  'timestamp': FieldValue.serverTimestamp(),
+                                  'message': 'Testing BigQuery Export Extension from Echo App!',
+                                  'user': 'test_user_123',
+                                  'type': 'test_post'
+                                });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Created test post! Check BigQuery.', style: TextStyle(color: Colors.black)), backgroundColor: C.primary),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e'), backgroundColor: C.error),
+                                  );
+                                }
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: C.surfaceMid,
+                              foregroundColor: C.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('CREATE DOC', style: TextStyle(fontFamily: 'SpaceGrotesk', fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () async {
+                              try {
+                                await FirebaseFirestore.instance.collection('posts').doc('bigquery-mirror-test').delete();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Deleted test post! Check BigQuery.', style: TextStyle(color: Colors.black)), backgroundColor: C.error),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e'), backgroundColor: C.error),
+                                  );
+                                }
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: C.surfaceMid,
+                              foregroundColor: C.error,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('DELETE DOC', style: TextStyle(fontFamily: 'SpaceGrotesk', fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 36),
 
                     // Nearby Requests
@@ -328,7 +398,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       letterSpacing: 2.5,
                       color: C.outline)),
               if (urgent)
-                PulseDot(color: C.error, size: 8)
+                const PulseDot(color: C.error, size: 8)
               else
                 const SizedBox(
                     width: 8,
@@ -385,10 +455,12 @@ class _CommunityMap extends CustomPainter {
     final p = Paint()
       ..color = const Color(0xFF181818)
       ..strokeWidth = 1;
-    for (double x = 0; x < size.width; x += 30)
+    for (double x = 0; x < size.width; x += 30) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
-    for (double y = 0; y < size.height; y += 30)
+    }
+    for (double y = 0; y < size.height; y += 30) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), p);
+    }
     // Markers
     final red = Paint()..color = const Color(0x33FF453A);
     canvas.drawCircle(Offset(size.width * 0.3, size.height * 0.4), 20, red);

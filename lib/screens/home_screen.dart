@@ -11,8 +11,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _pulseCtrl;
   late AnimationController _pingCtrl;
-  bool _stealthMode = false;
-  bool _meshSharing = true;
+  final bool _stealthMode = false;
+  final bool _meshSharing = true;
 
   @override
   void initState() {
@@ -760,10 +760,12 @@ class _GridPainter extends CustomPainter {
     final p = Paint()
       ..color = const Color(0xFF1A1A1A)
       ..strokeWidth = 1;
-    for (double x = 0; x < size.width; x += 40)
+    for (double x = 0; x < size.width; x += 40) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
-    for (double y = 0; y < size.height; y += 40)
+    }
+    for (double y = 0; y < size.height; y += 40) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), p);
+    }
   }
 
   @override

@@ -13,11 +13,18 @@ import 'screens/local_incidents_screen.dart';
 import 'screens/disaster_screen.dart';
 import 'screens/war_screen.dart';
 import 'screens/radio_screen.dart';
+import 'screens/translate_screen.dart';
 import 'widgets/shared.dart';
 import 'widgets/app_drawer.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'widgets/global_ai_fab.dart';
+import 'screens/voice_agent_screen.dart';
+
+final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -36,11 +43,19 @@ class EchoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: globalNavigatorKey,
       title: 'ECHO',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       darkTheme: buildTheme(),
       themeMode: ThemeMode.dark,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: child,
+          floatingActionButton: GlobalAiFabs(navigatorKey: globalNavigatorKey),
+        );
+      },
       initialRoute: '/',
       routes: {
         '/': (_) => const SignupScreen(),
@@ -53,6 +68,8 @@ class EchoApp extends StatelessWidget {
         '/local': (_) => const LocalIncidentsScreen(),
         '/disaster': (_) => const DisasterScreen(),
         '/war': (_) => const WarScreen(),
+        '/translate': (_) => const TranslateScreen(),
+        '/voice_agent': (_) => const VoiceAgentScreen(),
       },
     );
   }

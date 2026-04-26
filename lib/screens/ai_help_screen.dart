@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
+import '../services/gemini_service.dart';
 
 class AiHelpScreen extends StatefulWidget {
   const AiHelpScreen({super.key});
@@ -16,6 +17,7 @@ class _AiHelpScreenState extends State<AiHelpScreen>
   final _msgController = TextEditingController();
   final _scrollController = ScrollController();
   late AnimationController _pulseCtrl;
+  final GeminiService _geminiService = GeminiService();
 
   final List<_ChatMsg> _messages = [
     _ChatMsg(
@@ -45,7 +47,7 @@ class _AiHelpScreenState extends State<AiHelpScreen>
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     final text = _msgController.text.trim();
     if (text.isEmpty) return;
 
@@ -60,38 +62,24 @@ class _AiHelpScreenState extends State<AiHelpScreen>
     _msgController.clear();
     _scrollToBottom();
 
-    // Simulate AI response after a delay
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-      setState(() {
-        _isTyping = false;
-        _messages.add(_ChatMsg(
-          text: _getAiResponse(text),
-          isBot: true,
-          time: timeStr,
-        ));
-      });
-      _scrollToBottom();
-    });
-  }
+    // Fetch real response from Gemini API
+    final response = await _geminiService.sendMessage(text);
 
-  String _getAiResponse(String input) {
-    final lower = input.toLowerCase();
-    if (lower.contains('flood') || lower.contains('water')) {
-      return 'FLOOD PROTOCOL ACTIVE.\n\n1. Move to higher ground immediately\n2. Avoid walking in moving water\n3. If trapped, signal from the highest point\n4. Emergency shelters: Sector 4-B, 7-A\n\nShall I activate evacuation routing?';
-    } else if (lower.contains('fire')) {
-      return 'FIRE RESPONSE INITIATED.\n\n1. Evacuate immediately via nearest exit\n2. Stay low — smoke rises\n3. Do NOT use elevators\n4. Rally point: Grid Ref 40.714°N\n\nI\'m pinging the nearest fire response unit.';
-    } else if (lower.contains('earthquake') || lower.contains('quake')) {
-      return 'SEISMIC EVENT PROTOCOL.\n\n1. DROP — get on hands and knees\n2. COVER — under sturdy furniture\n3. HOLD ON — until shaking stops\n4. After: check for gas leaks, structural damage\n\nMonitoring aftershock frequency...';
-    } else if (lower.contains('help') || lower.contains('sos')) {
-      return 'EMERGENCY BROADCAST READY.\n\nI can help you:\n• Send an SOS signal to the mesh network\n• Contact nearby rescue units\n• Share your GPS coordinates\n• Connect to community volunteers\n\nWhat kind of help do you need?';
-    } else if (lower.contains('shelter') || lower.contains('safe')) {
-      return 'NEAREST SAFE ZONES:\n\n📍 Sector 4-B Shelter — 1.2km NW\n   Capacity: 340/500 | Medical: YES\n\n📍 Sector 7-A Community Center — 2.8km E\n   Capacity: 120/200 | Medical: YES\n\n📍 Grid Ref 40.72°N Emergency Camp — 4.1km S\n   Capacity: 800/1000 | Medical: LIMITED\n\nShall I plot the safest route?';
-    } else if (lower.contains('medical') || lower.contains('first aid') || lower.contains('injury')) {
-      return 'MEDICAL ASSISTANCE MODULE.\n\nPlease describe the injury/condition:\n• Bleeding → Apply direct pressure\n• Burns → Cool with clean water 10+ min\n• Fracture → Immobilize, do NOT move\n• CPR needed → I\'ll guide you step by step\n\nNearest medical unit: 0.8km — ETA 4 min.';
-    } else {
-      return 'Acknowledged. I\'m processing your request through the tactical AI module.\n\nIn the meantime:\n• Your location is being monitored\n• Mesh network connectivity: STRONG\n• Nearest response unit: 1.4km away\n\nCan you provide more details about your situation?';
-    }
+    if (!mounted) return;
+    
+    final replyNow = TimeOfDay.now();
+    final replyTimeStr =
+        '${replyNow.hour.toString().padLeft(2, '0')}:${replyNow.minute.toString().padLeft(2, '0')}';
+
+    setState(() {
+      _isTyping = false;
+      _messages.add(_ChatMsg(
+        text: response,
+        isBot: true,
+        time: replyTimeStr,
+      ));
+    });
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
@@ -369,16 +357,16 @@ class _AiHelpScreenState extends State<AiHelpScreen>
               ),
               border: Border.all(color: C.outlineVar.withOpacity(0.2)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _TypingDot(delay: 0),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 _TypingDot(delay: 200),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 _TypingDot(delay: 400),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8),
+                Text(
                   'analyzing...',
                   style: TextStyle(
                     fontFamily: 'Inter',

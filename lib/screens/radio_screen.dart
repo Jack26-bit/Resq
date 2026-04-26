@@ -443,17 +443,17 @@ class _RadioScreenState extends State<RadioScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('SIGNAL ACTIVITY',
+              Text('SIGNAL ACTIVITY',
                   style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 2,
                       color: Color(0xFF666666))),
-              const Text('-102 dBm',
+              Text('-102 dBm',
                   style: TextStyle(
                       fontFamily: 'SpaceGrotesk',
                       fontWeight: FontWeight.w700,
@@ -470,20 +470,20 @@ class _RadioScreenState extends State<RadioScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('BANDWIDTH',
+                  Text('BANDWIDTH',
                       style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 9,
                           letterSpacing: 2,
                           color: Color(0xFF555555))),
-                  const SizedBox(height: 2),
-                  const Text('12.5 KHz',
+                  SizedBox(height: 2),
+                  Text('12.5 KHz',
                       style: TextStyle(
                           fontFamily: 'SpaceGrotesk',
                           fontWeight: FontWeight.w700,
@@ -494,14 +494,14 @@ class _RadioScreenState extends State<RadioScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text('MODULATION',
+                  Text('MODULATION',
                       style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 9,
                           letterSpacing: 2,
                           color: Color(0xFF555555))),
-                  const SizedBox(height: 2),
-                  const Text('FM - NARROW',
+                  SizedBox(height: 2),
+                  Text('FM - NARROW',
                       style: TextStyle(
                           fontFamily: 'SpaceGrotesk',
                           fontWeight: FontWeight.w700,

@@ -43,10 +43,10 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text('ECHO',
                             style: TextStyle(
                                 fontFamily: 'SpaceGrotesk',
@@ -143,15 +143,54 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ),
 
+            const SizedBox(height: 16),
+            const Divider(color: Color(0xFF2A2A2A), height: 1),
+            const SizedBox(height: 16),
+
+            // ML Kit Tools
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text('ML KIT TOOLS',
+                  style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3,
+                      color: Color(0xFF666666))),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              leading: const Icon(Icons.translate_rounded,
+                  color: Color(0xFF7B61FF), size: 20),
+              title: const Text('TRANSLATE',
+                  style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: Colors.white)),
+              subtitle: const Text('55+ languages · on-device',
+                  style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 10,
+                      color: Color(0xFF888888))),
+              trailing: const Icon(Icons.chevron_right,
+                  color: Color(0xFF444444), size: 20),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed('/translate');
+              },
+            ),
+
             const Spacer(),
             // Footer version
-            Padding(
-              padding: const EdgeInsets.all(20),
+            const Padding(
+              padding: EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const PulseDot(color: C.green),
-                  const SizedBox(width: 8),
-                  const Text('MESH NETWORK ACTIVE · v2.4.1',
+                  PulseDot(color: C.green),
+                  SizedBox(width: 8),
+                  Text('MESH NETWORK ACTIVE · v2.4.1',
                       style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 9,

@@ -11,7 +11,7 @@ class LocalIncidentsScreen extends StatelessWidget {
       backgroundColor: C.bg,
       body: Column(
         children: [
-          ResQAppBar(title: 'LOCAL INCIDENTS', showBack: true),
+          const ResQAppBar(title: 'LOCAL INCIDENTS', showBack: true),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
@@ -19,20 +19,20 @@ class LocalIncidentsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // System status
-                  Row(children: [
+                  const Row(children: [
                     PulseDot(),
-                    const SizedBox(width: 8),
-                    const SectionLabel('System Status'),
+                    SizedBox(width: 8),
+                    SectionLabel('System Status'),
                   ]),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(color: C.surfaceHigh, borderRadius: BorderRadius.circular(12)),
-                    child: Stack(
+                    child: const Stack(
                       children: [
                         Positioned(top: -8, right: -8,
-                          child: Opacity(opacity: 0.08, child: const Icon(Icons.radar, size: 80, color: Colors.white))),
-                        const Column(
+                          child: Opacity(opacity: 0.08, child: Icon(Icons.radar, size: 80, color: Colors.white))),
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('LOCAL AREA MODE ACTIVE',

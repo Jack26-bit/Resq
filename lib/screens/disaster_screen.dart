@@ -31,11 +31,11 @@ class _DisasterScreenState extends State<DisasterScreen>
       backgroundColor: C.bg,
       body: Column(
         children: [
-          ResQAppBar(
+          const ResQAppBar(
             title: 'DISASTER PROTOCOL',
             showBack: true,
             actions: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(right: 16),
                 child: Text('ECHO',
                     style: TextStyle(
@@ -87,22 +87,22 @@ class _DisasterScreenState extends State<DisasterScreen>
         boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 24)],
       ),
       padding: const EdgeInsets.all(24),
-      child: Stack(
+      child: const Stack(
         children: [
           Positioned(
               right: -10,
               top: -10,
               child: Opacity(
                   opacity: 0.07,
-                  child: const Icon(Icons.warning,
+                  child: Icon(Icons.warning,
                       size: 140, color: Colors.white))),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Icon(Icons.warning, color: C.primary, size: 18),
-                const SizedBox(width: 8),
-                const Text('SYSTEM STATUS',
+                Icon(Icons.warning, color: C.primary, size: 18),
+                SizedBox(width: 8),
+                Text('SYSTEM STATUS',
                     style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 10,
@@ -110,8 +110,8 @@ class _DisasterScreenState extends State<DisasterScreen>
                         letterSpacing: 2.5,
                         color: C.onSurfaceVar)),
               ]),
-              const SizedBox(height: 12),
-              const Text(
+              SizedBox(height: 12),
+              Text(
                   'DISASTER MODE ACTIVE: Heavy rainfall expected within 24 hours.',
                   style: TextStyle(
                       fontFamily: 'SpaceGrotesk',
@@ -120,8 +120,8 @@ class _DisasterScreenState extends State<DisasterScreen>
                       color: C.primary,
                       height: 1.2,
                       letterSpacing: -0.5)),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                   'Flood risk rising in low-lying areas. Evacuation routes prepared. Stay alert for updates. All essential systems prioritized for survival.',
                   style: TextStyle(
                       fontFamily: 'Inter',
@@ -463,13 +463,13 @@ class _DisasterScreenState extends State<DisasterScreen>
         borderRadius: BorderRadius.circular(12),
         border: const Border(left: BorderSide(color: C.primary, width: 2)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.psychology, color: C.primary, size: 18),
-            const SizedBox(width: 8),
-            const Text('AI ASSESSMENT',
+            Icon(Icons.psychology, color: C.primary, size: 18),
+            SizedBox(width: 8),
+            Text('AI ASSESSMENT',
                 style: TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontWeight: FontWeight.w700,
@@ -477,19 +477,19 @@ class _DisasterScreenState extends State<DisasterScreen>
                     letterSpacing: 1.5,
                     color: C.primary)),
           ]),
-          const SizedBox(height: 12),
-          const Text(
+          SizedBox(height: 12),
+          Text(
               'Based on current flood trajectory and rainfall data, Sector 4-B faces highest risk. Recommend immediate evacuation of Zone C within 4 hours. Medical resources being rerouted.',
               style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
                   color: C.onSurfaceVar,
                   height: 1.5)),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(children: [
             PulseDot(color: C.primary),
-            const SizedBox(width: 8),
-            const Text('CONFIDENCE: 94.2%',
+            SizedBox(width: 8),
+            Text('CONFIDENCE: 94.2%',
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 11,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/colors.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -109,8 +110,20 @@ class _SignupScreenState extends State<SignupScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: TextButton(
-                            onPressed: () => Navigator.of(context)
-                                .pushReplacementNamed('/home'),
+                            onPressed: () async {
+                              try {
+                                await FirebaseAuth.instance.signInAnonymously();
+                                if (context.mounted) {
+                                  Navigator.of(context).pushReplacementNamed('/home');
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Auth Error: $e')),
+                                  );
+                                }
+                              }
+                            },
                             style: TextButton.styleFrom(
                               backgroundColor: C.primary,
                               foregroundColor: C.onPrimary,

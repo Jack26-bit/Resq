@@ -11,10 +11,10 @@ class WarScreen extends StatelessWidget {
       backgroundColor: C.bg,
       body: Column(
         children: [
-          ResQAppBar(
+          const ResQAppBar(
             title: 'WAR MODE',
             showBack: true,
-            actions: const [
+            actions: [
               Padding(
                   padding: EdgeInsets.only(right: 16),
                   child: Icon(Icons.crisis_alert, color: C.error))
@@ -71,11 +71,11 @@ class WarScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(children: [
-                                const Icon(Icons.warning,
+                              const Row(children: [
+                                Icon(Icons.warning,
                                     color: C.error, size: 18),
-                                const SizedBox(width: 6),
-                                const Text('ACTIVE THREATS',
+                                SizedBox(width: 6),
+                                Text('ACTIVE THREATS',
                                     style: TextStyle(
                                         fontFamily: 'SpaceGrotesk',
                                         fontWeight: FontWeight.w700,
@@ -110,16 +110,16 @@ class WarScreen extends StatelessWidget {
                                     ),
                                   ]),
                               const SizedBox(height: 8),
-                              Row(
+                              const Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Distance to zone',
+                                    Text('Distance to zone',
                                         style: TextStyle(
                                             fontFamily: 'Inter',
                                             fontSize: 12,
                                             color: C.onSurfaceVar)),
-                                    const Text('1.2KM',
+                                    Text('1.2KM',
                                         style: TextStyle(
                                             fontFamily: 'SpaceGrotesk',
                                             fontWeight: FontWeight.w700,
@@ -143,18 +143,18 @@ class WarScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Tactical Overlay
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('Tactical Overlay',
+                      Text('Tactical Overlay',
                           style: TextStyle(
                               fontFamily: 'SpaceGrotesk',
                               fontWeight: FontWeight.w700,
                               fontSize: 26,
                               letterSpacing: -0.5,
                               color: C.primary)),
-                      const Text('LIVE SYNC ACTIVE',
+                      Text('LIVE SYNC ACTIVE',
                           style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 10,
@@ -502,10 +502,12 @@ class _WarMapPainter extends CustomPainter {
     final grid = Paint()
       ..color = const Color(0xFF151515)
       ..strokeWidth = 1;
-    for (double x = 0; x < size.width; x += 30)
+    for (double x = 0; x < size.width; x += 30) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), grid);
-    for (double y = 0; y < size.height; y += 30)
+    }
+    for (double y = 0; y < size.height; y += 30) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
+    }
     // Red zones
     canvas.drawCircle(Offset(size.width * 0.65, size.height * 0.35), 55,
         Paint()..color = const Color(0x40FF3B30));
