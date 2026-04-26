@@ -11,6 +11,7 @@ Dark-themed disaster response app with 8 screens matching the Stitch/ECHO design
 - `/local` → Local Incidents Dashboard
 - `/disaster` → Disaster Mode Protocol
 - `/war` → War Mode Protocol
+- `/mesh` → Offline Mesh Chat (Decentralized P2P bluetooth messaging)
 
 ## Setup
 
@@ -48,11 +49,17 @@ python3 -m http.server 8080
 ```
 
 ## Dependencies
-Only two packages needed (both in pubspec.yaml):
+The app relies on the following core packages (check `pubspec.yaml` for the full list):
 - `google_fonts: ^6.2.1`
 - `flutter_animate: ^4.5.0`
+- `google_maps_flutter: ^2.17.0`
+- `firebase_core: ^3.13.0`
+- `nearby_connections: ^4.3.0` (for Offline Mesh Networking)
+- `cryptography: ^2.9.0`
+- `uuid: ^4.5.3`
+- `shared_preferences: ^2.5.5`
 
-Run `flutter pub get` and you're done — no extra setup.
+Run `flutter pub get` after cloning the repository.
 
 ## Design Notes
 - Background: `#131313`
