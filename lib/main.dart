@@ -13,7 +13,11 @@ import 'screens/local_incidents_screen.dart';
 import 'screens/disaster_screen.dart';
 import 'screens/war_screen.dart';
 import 'screens/radio_screen.dart';
+
 import 'screens/translate_screen.dart';
+
+import 'screens/mesh_chat_screen.dart';
+
 import 'widgets/shared.dart';
 import 'widgets/app_drawer.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -70,6 +74,7 @@ class EchoApp extends StatelessWidget {
         '/war': (_) => const WarScreen(),
         '/translate': (_) => const TranslateScreen(),
         '/voice_agent': (_) => const VoiceAgentScreen(),
+        '/mesh': (_) => const MeshChatScreen(),
       },
     );
   }
