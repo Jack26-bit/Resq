@@ -6,6 +6,18 @@ It combines AI, offline mesh networking, and real-time emergency coordination to
 
 ⚡ Built for real-world emergencies: disasters, blackouts, war zones, and no-signal environments.
 
+## 📲 Install APK
+
+Use the ready-to-install APK here:
+
+[ResQ.apk](C:/Users/JERANTJENCATH/Desktop/ResQ.apk)
+
+### Quick Access
+
+- Open APK: [ResQ.apk](C:/Users/JERANTJENCATH/Desktop/ResQ.apk)
+- Exact file path: `C:\Users\JERANTJENCATH\Desktop\ResQ.apk`
+- Install: Transfer the APK to your Android device and open it to install
+
 ## 🚨 Core Features
 
 ### 🔴 Panic-Ping (SOS System)
@@ -129,6 +141,10 @@ build/app/outputs/flutter-apk/app-release.apk
 - Demo submission
 - Judge testing
 - Direct installation
+
+If you want the exact ready-made APK file, use:
+
+[ResQ.apk](C:/Users/JERANTJENCATH/Desktop/ResQ.apk)
 
 ### 4️⃣ Run Web Version (Optional)
 
