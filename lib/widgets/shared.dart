@@ -87,42 +87,61 @@ class ResQAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xB3131313),
-        border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
-        boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 40, offset: Offset(0, 20))],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: height,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: showBack ? () => Navigator.of(context).pop() : onMenu,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(showBack ? Icons.arrow_back : Icons.menu, color: Colors.white, size: 22),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title.toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: 'SpaceGrotesk',
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              C.surfaceLowest.withValues(alpha: 0.96),
+              C.surfaceLowest.withValues(alpha: 0.88),
+            ],
+          ),
+          border: Border(bottom: BorderSide(color: C.outlineVar.withValues(alpha: 0.6))),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 36,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  InkResponse(
+                    onTap: showBack ? () => Navigator.of(context).pop() : onMenu,
+                    radius: 22,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(
+                        showBack ? Icons.arrow_back : Icons.menu,
+                        color: C.onSurface,
+                        size: 22,
+                      ),
                     ),
                   ),
-                ),
-                if (actions != null) ...actions!,
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: C.onSurface,
+                          ),
+                    ),
+                  ),
+                  if (actions != null) ...actions!,
+                ],
+              ),
             ),
           ),
         ),
@@ -148,44 +167,66 @@ class ResQBottomNav extends StatelessWidget {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xCC0A0A0A),
-        border: Border(top: BorderSide(color: Color(0x0DFFFFFF))),
-        boxShadow: [BoxShadow(color: Color(0x80000000), blurRadius: 30, offset: Offset(0, -10))],
+      decoration: BoxDecoration(
+        color: C.surfaceLowest.withValues(alpha: 0.96),
+        border: Border(top: BorderSide(color: C.outlineVar.withValues(alpha: 0.6))),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 28,
+            offset: const Offset(0, -12),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 72,
           child: Row(
             children: List.generate(items.length, (i) {
               final item = items[i];
               final isActive = activeIndex == i;
               return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(i),
-                  child: Container(
-                    color: isActive ? C.surfaceHigh : Colors.transparent,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isActive ? item['activeIcon'] as IconData : item['icon'] as IconData,
-                          color: isActive ? Colors.white : const Color(0xFF666666),
-                          size: 22,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => onTap(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isActive ? C.surfaceMid : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isActive
+                              ? C.primary.withValues(alpha: 0.35)
+                              : Colors.transparent,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['label'] as String,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
-                            color: isActive ? Colors.white : const Color(0xFF666666),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isActive
+                                ? item['activeIcon'] as IconData
+                                : item['icon'] as IconData,
+                            color: isActive ? C.primary : C.onSurfaceVar,
+                            size: 22,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 220),
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                              color: isActive ? C.primary : C.onSurfaceVar,
+                            ),
+                            child: Text(item['label'] as String),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -204,84 +245,112 @@ class HybridLinkHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xB3131313),
-        border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
-        boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 20, offset: Offset(0, 10))],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 56,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Builder(
-                  builder: (ctx) => GestureDetector(
-                    onTap: () => Scaffold.of(ctx).openDrawer(),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(Icons.menu, color: Colors.white, size: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.wifi_tethering, color: Color(0xFF00E5FF), size: 16),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'ECHO HYBRID LINK',
-                        style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12,
-                          letterSpacing: 2,
-                          color: Color(0xFF00E5FF),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 720;
+        final statusIcons = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_done, color: C.green, size: 16),
+            const SizedBox(width: 4),
+            Icon(Icons.signal_cellular_alt, color: C.info, size: 16),
+          ],
+        );
+
+        return Container(
+          decoration: BoxDecoration(
+            color: C.surfaceLowest.withValues(alpha: 0.92),
+            border: Border(bottom: BorderSide(color: C.outlineVar.withValues(alpha: 0.6))),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: isCompact ? 64 : 56,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Builder(
+                      builder: (ctx) => InkResponse(
+                        onTap: () => Scaffold.of(ctx).openDrawer(),
+                        radius: 22,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Icon(Icons.menu, color: C.onSurface, size: 24),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 12,
+                          runSpacing: 6,
                           children: [
-                            Icon(Icons.group, color: Color(0xFF00E5FF), size: 12),
-                            SizedBox(width: 4),
-                            Text(
-                              '14 PEERS NEARBY',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF00E5FF),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.wifi_tethering, color: C.info, size: 16),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'RESQ HYBRID LINK',
+                                  style: const TextStyle(
+                                    fontFamily: 'SpaceGrotesk',
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    letterSpacing: 2,
+                                    color: C.info,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: C.info.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: C.info.withValues(alpha: 0.3)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.group, color: C.info, size: 12),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '14 PEERS NEARBY',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: C.info,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                            if (isCompact) statusIcons,
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const Row(
-                  children: [
-                    Icon(Icons.cloud_done, color: Color(0xFF34C759), size: 16),
-                    SizedBox(width: 4),
-                    Icon(Icons.signal_cellular_alt, color: Color(0xFF00E5FF), size: 16),
+                    ),
+                    if (!isCompact) statusIcons,
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -328,12 +397,9 @@ class SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         text.toUpperCase(),
-        style: const TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 3,
-          color: C.onSurfaceVar,
-        ),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              letterSpacing: 3,
+              color: C.onSurfaceVar,
+            ),
       );
 }

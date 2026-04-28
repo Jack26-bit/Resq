@@ -3,12 +3,15 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  final String _apiKey;
-  final GenerativeModel? _model;
-  final ChatSession? _chatSession;
+  late final String _apiKey;
+  late final String _modelId;
+  late final GenerativeModel? _model;
+  late final ChatSession? _chatSession;
 
   GeminiService() {
     _apiKey = dotenv.env['GEMINI_API_KEY']?.trim() ?? '';
+    final configuredModel = dotenv.env['GEMINI_MODEL']?.trim() ?? '';
+    _modelId = configuredModel.isNotEmpty ? configuredModel : 'gemini-2.5-flash';
 
     if (_apiKey.isEmpty) {
       _model = null;
@@ -25,7 +28,7 @@ class GeminiService {
     ];
 
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: _modelId,
       apiKey: _apiKey,
       safetySettings: safetySettings,
       systemInstruction: Content.system(
@@ -36,7 +39,7 @@ class GeminiService {
       ),
     );
 
-    _chatSession = _model.startChat();
+    _chatSession = _model!.startChat();
   }
 
   Future<String> sendMessage(String text) async {
@@ -45,10 +48,13 @@ class GeminiService {
     }
 
     try {
-      final response = await _chatSession.sendMessage(Content.text(text));
+      final response = await _chatSession!.sendMessage(Content.text(text));
       return response.text?.trim() ?? 'I was unable to process that request. Please rephrase your emergency.';
     } catch (e) {
-      return 'NETWORK FAILURE. Unable to connect to ECHO AI core. Error: $e';
+      return _formatError(
+        e,
+        fallbackPrefix: 'NETWORK FAILURE. Unable to connect to ECHO AI core.',
+      );
     }
   }
 
@@ -60,12 +66,20 @@ class GeminiService {
     try {
       final prompt = TextPart('Analyze this image from a disaster/emergency perspective. Provide a brief tactical summary of what is visible, highlighting any hazards, resources, or critical situations.');
       final imagePart = DataPart(mimeType, imageBytes);
-      final response = await _model.generateContent([
+      final response = await _model!.generateContent([
         Content.multi([prompt, imagePart])
       ]);
       return response.text?.trim() ?? 'Unable to analyze image.';
     } catch (e) {
-      return 'AI ANALYSIS FAILED. Error: $e';
+      return _formatError(e, fallbackPrefix: 'AI ANALYSIS FAILED.');
     }
+  }
+
+  String _formatError(Object error, {required String fallbackPrefix}) {
+    final message = error.toString().toLowerCase();
+    if (message.contains('quota') || message.contains('limit: 0')) {
+      return 'AI quota exceeded for model $_modelId. Check AI Studio rate limits or set GEMINI_MODEL to a model with quota.';
+    }
+    return '$fallbackPrefix Error: $error';
   }
 }

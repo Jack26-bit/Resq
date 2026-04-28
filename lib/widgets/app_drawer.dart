@@ -49,7 +49,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('ECHO',
+                        Text('RESQ',
                             style: TextStyle(
                                 fontFamily: 'SpaceGrotesk',
                                 fontWeight: FontWeight.w800,
@@ -110,13 +110,13 @@ class _AppDrawerState extends State<AppDrawer> {
             _buildToggle(
               'Internet Cloud-Sync',
               _cloudSync,
-              const Color(0xFF00E5FF),
+              C.info,
               (v) => setState(() => _cloudSync = v),
             ),
             _buildToggle(
               'P2P Mesh Relay',
               _meshRelay,
-              const Color(0xFF00E5FF),
+              C.info,
               (v) => setState(() => _meshRelay = v),
             ),
             _buildToggle(
@@ -164,7 +164,7 @@ class _AppDrawerState extends State<AppDrawer> {
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               leading: const Icon(Icons.translate_rounded,
-                  color: Color(0xFF7B61FF), size: 20),
+                  color: C.info, size: 20),
               title: const Text('TRANSLATE',
                   style: TextStyle(
                       fontFamily: 'SpaceGrotesk',

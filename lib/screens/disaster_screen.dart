@@ -37,7 +37,7 @@ class _DisasterScreenState extends State<DisasterScreen>
             actions: [
               Padding(
                 padding: EdgeInsets.only(right: 16),
-                child: Text('ECHO',
+                child: Text('RESQ',
                     style: TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontWeight: FontWeight.w900,

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../core/platform/bluetooth_mesh_support.dart';
 import '../theme/colors.dart';
+import '../widgets/ui_kit.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -144,210 +145,43 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              // Header with logo
-              ColorFiltered(
-                colorFilter: const ColorFilter.matrix(<double>[
-                  -1,
-                  0,
-                  0,
-                  0,
-                  255,
-                  0,
-                  -1,
-                  0,
-                  0,
-                  255,
-                  0,
-                  0,
-                  -1,
-                  0,
-                  255,
-                  0,
-                  0,
-                  0,
-                  1,
-                  0,
-                ]),
-                child: Image.asset(
-                  'assets/images/echo_logo.png',
-                  height: 80,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'REAL-TIME DISASTER RESPONSE NETWORK',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 10,
-                  letterSpacing: 3,
-                  color: C.onSurfaceVar,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
+      body: ResqBackground(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 960;
+              final hero = _buildHero(context, isWide: isWide);
+              final form = _buildFormCard(context);
 
-              // Card
-              Container(
-                decoration: BoxDecoration(
-                  color: C.surfaceMid,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: C.outlineVar.withOpacity(0.2)),
-                ),
-                padding: const EdgeInsets.all(32),
-                child: Stack(
-                  children: [
-                    // Grain texture (subtle gradient fallback)
-                    Positioned.fill(
-                      child: Opacity(
-                        opacity: 0.03,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(16)),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withOpacity(0.1),
-                                Colors.transparent,
-                                Colors.white.withOpacity(0.05),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'INITIALIZE ACCESS',
-                          style: TextStyle(
-                            fontFamily: 'SpaceGrotesk',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 22,
-                            color: C.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        _label('Full Name'),
-                        const SizedBox(height: 8),
-                        _field(_name, 'Johnathan Doe', TextInputType.name),
-                        const SizedBox(height: 20),
-                        _label('Phone Number'),
-                        const SizedBox(height: 8),
-                        _field(_phone, '+91 98765 43210', TextInputType.phone),
-                        const SizedBox(height: 20),
-                        _label('Location'),
-                        const SizedBox(height: 8),
-                        _locationField(),
-                        const SizedBox(height: 28),
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton(
-                            onPressed: _loading ? null : _handleSignUp,
-                            style: TextButton.styleFrom(
-                              backgroundColor: C.primary,
-                              foregroundColor: C.onPrimary,
-                              disabledBackgroundColor:
-                                  C.primary.withOpacity(0.5),
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: _loading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'SIGN UP',
-                                    style: TextStyle(
-                                      fontFamily: 'SpaceGrotesk',
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14,
-                                      letterSpacing: 3,
-                                      color: C.onPrimary,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Divider(color: Color(0x1AFFFFFF)),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: GestureDetector(
-                            onTap: () => Navigator.of(context).pushNamed('/login'),
-                            child: RichText(
-                              text: const TextSpan(
-                                style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 12,
-                                    color: C.onSurfaceVar),
-                                children: [
-                                  TextSpan(
-                                      text: 'Already part of the network? '),
-                                  TextSpan(
-                                    text: 'Log in',
-                                    style: TextStyle(
-                                        color: C.primary,
-                                        fontWeight: FontWeight.w700),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Footer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: ResqPage(
+                  maxWidth: isWide ? 1120 : 560,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                            shape: BoxShape.circle, color: C.primary),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text('SYSTEM LIVE',
-                          style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 10,
-                              letterSpacing: 2,
-                              color: C.outline)),
+                      if (isWide)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: hero),
+                            const SizedBox(width: 32),
+                            Expanded(child: form),
+                          ],
+                        )
+                      else ...[
+                        hero,
+                        const SizedBox(height: 28),
+                        form,
+                      ],
+                      const SizedBox(height: 24),
+                      _buildFooter(context),
+                      const SizedBox(height: 40),
                     ],
                   ),
-                  const Text('v2.4.0 tactical',
-                      style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 10,
-                          letterSpacing: 2,
-                          color: C.outline)),
-                ],
-              ),
-              const SizedBox(height: 60),
-            ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -385,54 +219,183 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _label(String t) => Text(
-        t.toUpperCase(),
-        style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2.5,
-            color: C.onSurfaceVar),
-      );
-
-  Widget _field(TextEditingController ctrl, String hint, TextInputType type) =>
-      TextField(
-        controller: ctrl,
-        keyboardType: type,
-        style: const TextStyle(fontFamily: 'Inter', color: C.onSurface),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: C.outlineVar),
-          filled: true,
-          fillColor: C.surfaceLow,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: C.primary)),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+  Widget _buildHero(BuildContext context, {required bool isWide}) {
+    return Column(
+      crossAxisAlignment:
+          isWide ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 12),
+        ColorFiltered(
+          colorFilter: const ColorFilter.matrix(<double>[
+            -1, 0, 0, 0, 255,
+            0, -1, 0, 0, 255,
+            0, 0, -1, 0, 255,
+            0, 0, 0, 1, 0,
+          ]),
+          child: Image.asset(
+            'assets/images/echo_logo.png',
+            height: 84,
+            fit: BoxFit.contain,
+          ),
         ),
-      );
-
-  Widget _locationField() => TextField(
-        controller: _loc,
-        style: const TextStyle(fontFamily: 'Inter', color: C.onSurface),
-        decoration: InputDecoration(
-          hintText: 'City or pincode (e.g. 560016)',
-          hintStyle: const TextStyle(color: C.outlineVar),
-          filled: true,
-          fillColor: C.surfaceLow,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: C.primary)),
-          contentPadding:
-              const EdgeInsets.only(left: 16, top: 18, bottom: 18, right: 50),
-          suffixIcon: const Icon(Icons.my_location, color: C.primary, size: 20),
+        const SizedBox(height: 16),
+        Text(
+          'REAL-TIME DISASTER RESPONSE NETWORK',
+          textAlign: isWide ? TextAlign.left : TextAlign.center,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                letterSpacing: 3,
+                color: C.onSurfaceVar,
+              ),
         ),
-      );
+        const SizedBox(height: 20),
+        Text(
+          'Create a secure local profile to unlock mesh sync, SOS broadcast, and AI guidance.',
+          textAlign: isWide ? TextAlign.left : TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: C.onSurfaceVar,
+              ),
+        ),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          alignment: isWide ? WrapAlignment.start : WrapAlignment.center,
+          children: [
+            _capabilityChip(Icons.hub, 'Mesh sync ready'),
+            _capabilityChip(Icons.sos, 'Priority alerts'),
+            _capabilityChip(Icons.lock, 'Device-bound access'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormCard(BuildContext context) {
+    return ResqCard(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Initialize access',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(color: C.onSurface),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Set up your identity to join the live response grid.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+          const ResqFieldLabel('Full name'),
+          const SizedBox(height: 8),
+          ResqTextField(
+            controller: _name,
+            hint: 'Johnathan Doe',
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 18),
+          const ResqFieldLabel('Phone number'),
+          const SizedBox(height: 8),
+          ResqTextField(
+            controller: _phone,
+            hint: '+91 98765 43210',
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 18),
+          const ResqFieldLabel('Location'),
+          const SizedBox(height: 8),
+          ResqTextField(
+            controller: _loc,
+            hint: 'City or pincode (e.g. 560016)',
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.done,
+            suffixIcon: const Icon(Icons.my_location, color: C.primary, size: 20),
+            onSubmitted: (_) {
+              if (!_loading) {
+                _handleSignUp();
+              }
+            },
+          ),
+          const SizedBox(height: 24),
+          ResqPrimaryButton(
+            label: 'SIGN UP',
+            isLoading: _loading,
+            onPressed: _loading ? null : _handleSignUp,
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pushNamed('/login'),
+              child: const Text('Already part of the network? Log in'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration:
+                  const BoxDecoration(shape: BoxShape.circle, color: C.primary),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'SYSTEM LIVE',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: C.outline,
+                    letterSpacing: 2,
+                  ),
+            ),
+          ],
+        ),
+        Text(
+          'v2.4.0 tactical',
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: C.outline,
+                letterSpacing: 2,
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _capabilityChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: C.surfaceLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: C.outlineVar.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: C.primary, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: C.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

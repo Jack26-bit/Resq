@@ -144,6 +144,13 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 16),
                       AnimatedBuilder(
                         animation: _pulse,
                         builder: (_, __) => Icon(Icons.sensors,

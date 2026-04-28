@@ -15,6 +15,7 @@ import 'screens/community_screen.dart';
 import 'screens/ai_help_screen.dart';
 import 'screens/smart_scan_screen.dart';
 import 'screens/translate_screen.dart';
+import 'screens/voice_agent_screen.dart';
 import 'screens/mesh_chat_screen.dart';
 import 'screens/war_screen.dart';
 import 'widgets/shared.dart';
@@ -33,7 +34,7 @@ Future<void> main() async {
   if (kIsWeb) {
     WebViewPlatform.instance = WebWebViewPlatform();
   }
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: "assets/.env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -44,26 +45,37 @@ Future<void> main() async {
     systemNavigationBarColor: C.bg,
     systemNavigationBarIconBrightness: Brightness.light,
   ));
-  runApp(const EchoApp());
+  runApp(const ResqApp());
 }
 
-class EchoApp extends StatelessWidget {
-  const EchoApp({super.key});
+class ResqApp extends StatelessWidget {
+  const ResqApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: globalNavigatorKey,
-      title: 'ECHO',
+      title: 'ResQ',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       darkTheme: buildTheme(),
       themeMode: ThemeMode.dark,
       builder: (context, child) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: child,
-          floatingActionButton: GlobalAiFabs(navigatorKey: globalNavigatorKey),
+        if (kIsWeb) {
+          return child ?? const SizedBox.shrink();
+        }
+
+        return Stack(
+          children: [
+            Positioned.fill(child: child ?? const SizedBox.shrink()),
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: SafeArea(
+                child: GlobalAiFabs(navigatorKey: globalNavigatorKey),
+              ),
+            ),
+          ],
         );
       },
       initialRoute: '/',
@@ -79,6 +91,7 @@ class EchoApp extends StatelessWidget {
         '/disaster': (_) => const DisasterScreen(),
         '/war': (_) => const WarScreen(),
         '/translate': (_) => const TranslateScreen(),
+        '/voice_agent': (_) => const VoiceAgentScreen(),
         '/scan': (_) => const SmartScanScreen(),
         '/mesh': (_) => const AppShell(initialIndex: 2),
       },

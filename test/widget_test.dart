@@ -11,8 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:resqnet/main.dart';
 
 void main() {
-  testWidgets('ResqNet app smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const EchoApp());
+  testWidgets('ResQ app smoke test', (WidgetTester tester) async {
+     await tester.pumpWidget(const ResqApp());
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

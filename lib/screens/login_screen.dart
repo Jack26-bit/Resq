@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/colors.dart';
+import '../widgets/ui_kit.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -79,54 +80,75 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                Image.asset('assets/images/echo_logo.png', height: 64),
-                const SizedBox(height: 12),
-                const Text('WELCOME BACK', style: TextStyle(color: C.onSurfaceVar, fontFamily: 'SpaceGrotesk', fontWeight: FontWeight.w700, letterSpacing: 2)),
-                const SizedBox(height: 28),
-                TextField(
-                  controller: _phone,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(color: C.onSurface, fontFamily: 'Inter'),
-                  decoration: InputDecoration(
-                    hintText: 'Phone number (e.g. +91 98765 43210)',
-                    hintStyle: const TextStyle(color: C.outlineVar),
-                    filled: true,
-                    fillColor: C.surfaceLow,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: _loading ? null : _handleLogin,
-                    style: TextButton.styleFrom(
-                      backgroundColor: C.primary,
-                      foregroundColor: C.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      body: ResqBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: ResqPage(
+                maxWidth: 520,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 12),
+                    Image.asset('assets/images/echo_logo.png', height: 68),
+                    const SizedBox(height: 16),
+                    Text(
+                      'WELCOME BACK',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: C.onSurfaceVar,
+                            letterSpacing: 2.4,
+                          ),
                     ),
-                    child: _loading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('LOG IN', style: TextStyle(fontFamily: 'SpaceGrotesk', fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 2)),
-                  ),
+                    const SizedBox(height: 24),
+                    ResqCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Continue session',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Use your device-linked phone number to reconnect.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 24),
+                          const ResqFieldLabel('Phone number'),
+                          const SizedBox(height: 8),
+                          ResqTextField(
+                            controller: _phone,
+                            hint: 'Phone number (e.g. +91 98765 43210)',
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (!_loading) {
+                                _handleLogin();
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          ResqPrimaryButton(
+                            label: 'LOG IN',
+                            isLoading: _loading,
+                            onPressed: _loading ? null : _handleLogin,
+                          ),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+                              child: const Text('Create new account'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
-                  child: const Text('Create new account', style: TextStyle(color: C.primary)),
-                ),
-              ],
+              ),
             ),
           ),
         ),

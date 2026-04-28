@@ -20,7 +20,7 @@ class GlobalAiFabs extends StatelessWidget {
             onPressed: () {
               navigatorKey.currentState?.pushNamed('/voice_agent');
             },
-            backgroundColor: const Color(0xFF00E5FF),
+            backgroundColor: C.info,
             elevation: 12,
             child: const Icon(Icons.mic, color: Colors.black, size: 20),
           ),

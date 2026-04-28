@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import '../theme/colors.dart';
+import '../widgets/ui_kit.dart';
+import '../widgets/shared.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -85,52 +87,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: Column(
-                children: [
-                  const SizedBox(height: 32),
-                  _buildSOSHero(),
-                  const SizedBox(height: 32),
-                  _buildModeCards(context),
-                  const SizedBox(height: 32),
-                  _buildFamilySection(),
-                  const SizedBox(height: 32),
-                  _buildLocalGrid(),
-                  const SizedBox(height: 32),
-                  _buildSystemDiagnostics(),
-                  const SizedBox(height: 40),
-                  Row(
+      body: ResqBackground(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                child: ResqPage(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: _actionButton(
-                          label: 'I NEED HELP',
-                          color: C.error,
-                          icon: Icons.sos,
-                          onTap: () => Navigator.of(context).pushNamed('/sos'),
-                        ),
+                      const SizedBox(height: 32),
+                      _buildSOSHero(),
+                      const SizedBox(height: 32),
+                      _buildModeCards(context),
+                      const SizedBox(height: 32),
+                      _buildFamilySection(),
+                      const SizedBox(height: 32),
+                      _buildLocalGrid(),
+                      const SizedBox(height: 32),
+                      _buildSystemDiagnostics(),
+                      const SizedBox(height: 40),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _actionButton(
+                              label: 'I NEED HELP',
+                              color: C.error,
+                              icon: Icons.sos,
+                              onTap: () => Navigator.of(context).pushNamed('/sos'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _actionButton(
+                              label: 'I CAN HELP',
+                              color: C.green,
+                              icon: Icons.volunteer_activism,
+                              onTap: () => Navigator.of(context).pushNamed('/community'),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _actionButton(
-                          label: 'I CAN HELP',
-                          color: C.green,
-                          icon: Icons.volunteer_activism,
-                          onTap: () => Navigator.of(context).pushNamed('/community'),
-                        ),
-                      ),
+                      const SizedBox(height: 32),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -138,12 +143,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ─── Header ────────────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xB3131313),
-        border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
+      decoration: BoxDecoration(
+        color: C.surfaceLowest.withValues(alpha: 0.92),
+        border: Border(bottom: BorderSide(color: C.outlineVar.withValues(alpha: 0.6))),
         boxShadow: [
           BoxShadow(
-              color: Color(0x66000000), blurRadius: 40, offset: Offset(0, 20))
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
+          ),
         ],
       ),
       child: SafeArea(
@@ -158,10 +166,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Container(
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0x80171717),
+                      color: C.surfaceLow,
                       borderRadius: BorderRadius.circular(4),
-                      border: const Border(
-                          left: BorderSide(color: C.errorContainer, width: 2)),
+                      border: Border(
+                        left: BorderSide(
+                          color: C.errorContainer.withValues(alpha: 0.9),
+                          width: 2,
+                        ),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -190,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   fontFamily: 'SpaceGrotesk',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 11,
-                                  color: Color(0xFFCCCCCC)),
+                                  color: C.onSurfaceVar),
                             ),
                           ),
                         ),
@@ -199,14 +211,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(width: 12),
-                GestureDetector(
+                InkWell(
                   onTap: _sendRapidSOS,
+                  borderRadius: BorderRadius.circular(6),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: C.errorContainer,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: C.error.withValues(alpha: 0.4)),
                     ),
                     child: const Text('SOS',
                         style: TextStyle(
@@ -331,80 +345,91 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // ─── Mode Cards ────────────────────────────────────────────────────────────
   Widget _buildModeCards(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('TACTICAL MODES',
-            style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 3,
-                color: Color(0xFF666666))),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'WAR MODE',
-          subtitle: 'Conflict response, safe corridors & supply chain',
-          icon: Icons.military_tech,
-          accent: const Color(0xFFFF3B30),
-          route: '/war',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'DISASTER MODE',
-          subtitle: 'Flood, seismic, tsunami & wildfire monitoring',
-          icon: Icons.warning_amber_rounded,
-          accent: const Color(0xFFFF9500),
-          route: '/disaster',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'LOCAL ZONE',
-          subtitle: 'Campus incidents, shelter & community alerts',
-          icon: Icons.location_city,
-          accent: const Color(0xFF34C759),
-          route: '/local',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'LIVE MAP',
-          subtitle: 'Real-time hazard mapping & navigation',
-          icon: Icons.map,
-          accent: Colors.blueAccent,
-          route: '/map',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'SMART SCAN',
-          subtitle: 'AI-powered damage assessment',
-          icon: Icons.document_scanner,
-          accent: Colors.purpleAccent,
-          route: '/scan',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'TRANSLATE',
-          subtitle: 'Real-time offline translation',
-          icon: Icons.translate,
-          accent: Colors.tealAccent,
-          route: '/translate',
-        ),
-        const SizedBox(height: 12),
-        _modeCard(
-          context,
-          label: 'COMMUNITY',
-          subtitle: 'Connect with volunteers & resources',
-          icon: Icons.people,
-          accent: Colors.orangeAccent,
-          route: '/community',
-        ),
-      ],
+    final modes = [
+      {
+        'label': 'WAR MODE',
+        'subtitle': 'Conflict response, safe corridors & supply chain',
+        'icon': Icons.military_tech,
+        'accent': C.error,
+        'route': '/war',
+      },
+      {
+        'label': 'DISASTER MODE',
+        'subtitle': 'Flood, seismic, tsunami & wildfire monitoring',
+        'icon': Icons.warning_amber_rounded,
+        'accent': C.amber,
+        'route': '/disaster',
+      },
+      {
+        'label': 'LOCAL ZONE',
+        'subtitle': 'Campus incidents, shelter & community alerts',
+        'icon': Icons.location_city,
+        'accent': C.green,
+        'route': '/local',
+      },
+      {
+        'label': 'LIVE MAP',
+        'subtitle': 'Real-time hazard mapping & navigation',
+        'icon': Icons.map,
+        'accent': C.info,
+        'route': '/map',
+      },
+      {
+        'label': 'SMART SCAN',
+        'subtitle': 'AI-powered damage assessment',
+        'icon': Icons.document_scanner,
+        'accent': C.primary,
+        'route': '/scan',
+      },
+      {
+        'label': 'TRANSLATE',
+        'subtitle': 'Real-time offline translation',
+        'icon': Icons.translate,
+        'accent': C.info,
+        'route': '/translate',
+      },
+      {
+        'label': 'COMMUNITY',
+        'subtitle': 'Connect with volunteers & resources',
+        'icon': Icons.people,
+        'accent': C.primary,
+        'route': '/community',
+      },
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 1100 ? 3 : width >= 760 ? 2 : 1;
+        final cardWidth = (width - ((columns - 1) * 12)) / columns;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionLabel('Tactical modes'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: modes
+                  .map(
+                    (mode) => SizedBox(
+                      width: cardWidth,
+                      child: _modeCard(
+                        context,
+                        label: mode['label'] as String,
+                        subtitle: mode['subtitle'] as String,
+                        icon: mode['icon'] as IconData,
+                        accent: mode['accent'] as Color,
+                        route: mode['route'] as String,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -416,51 +441,69 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color accent,
     required String route,
   }) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(route),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: C.surfaceLow,
-          borderRadius: BorderRadius.circular(12),
-          border: Border(left: BorderSide(color: accent, width: 3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Navigator.of(context).pushNamed(route),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: C.surfaceLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: C.outlineVar.withValues(alpha: 0.6)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
               ),
-              child: Icon(icon, color: accent, size: 26),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: accent.withValues(alpha: 0.35)),
+                ),
+                child: Icon(icon, color: accent, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
                       style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          letterSpacing: 0.5,
-                          color: accent)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
+                        fontFamily: 'SpaceGrotesk',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                        color: C.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
                       style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          color: Color(0xFF888888))),
-                ],
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        color: C.onSurfaceVar,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right,
-                color: accent.withValues(alpha: 0.6), size: 22),
-          ],
+              Icon(Icons.chevron_right,
+                  color: accent.withValues(alpha: 0.7), size: 22),
+            ],
+          ),
         ),
       ),
     );
@@ -731,31 +774,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 56,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color, width: 2),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontWeight: FontWeight.w800,
-                fontSize: 14,
-                letterSpacing: 1,
-                color: color,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          height: 56,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withValues(alpha: 0.7), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.18),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
               ),
-            ),
-          ],
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  letterSpacing: 1,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -779,61 +833,65 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'bar': null
       },
     ];
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.6,
-      ),
-      itemCount: items.length,
-      itemBuilder: (_, i) {
-        final item = items[i];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: C.surfaceLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 1100 ? 4 : width >= 760 ? 3 : 2;
+        final ratio = width >= 1100 ? 1.4 : 1.6;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: ratio,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text((item['label'] as String).toUpperCase(),
-                  style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      color: Color(0xFF666666))),
-              const SizedBox(height: 4),
-              Text(item['value'] as String,
-                  style: const TextStyle(
-                      fontFamily: 'SpaceGrotesk',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 20,
-                      color: Colors.white)),
-              const Spacer(),
-              if (item['bar'] != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: item['bar'] as double,
-                    backgroundColor: C.surfaceHigh,
-                    valueColor: const AlwaysStoppedAnimation(C.primary),
-                    minHeight: 4,
+          itemCount: items.length,
+          itemBuilder: (_, i) {
+            final item = items[i];
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: C.surfaceLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: C.outlineVar.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (item['label'] as String).toUpperCase(),
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
-                )
-              else if (item['sub'] != null)
-                Text(item['sub'] as String,
-                    style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 10,
-                        color: Color(0xFF888888))),
-            ],
-          ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item['value'] as String,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontSize: 20,
+                        ),
+                  ),
+                  const Spacer(),
+                  if (item['bar'] != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: item['bar'] as double,
+                        backgroundColor: C.surfaceHigh,
+                        valueColor: const AlwaysStoppedAnimation(C.primary),
+                        minHeight: 4,
+                      ),
+                    )
+                  else if (item['sub'] != null)
+                    Text(
+                      item['sub'] as String,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
