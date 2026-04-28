@@ -92,7 +92,7 @@ Decentralized rescue coordination
 
 /mesh → Offline Mesh Chat
 
-🧠 Architecture
+#🧠 Architecture
             ┌────────────────────────────┐
             │        ResQ App UI         │
             │  (SOS, Map, Mesh, AI UI)  │
@@ -113,8 +113,8 @@ Decentralized rescue coordination
           │ Firestore    │  │ APIs         │
           │ Auth + FCM   │  │ Maps/Weather │
           └──────────────┘  └──────────────┘
-🚀 Tech Stack
-Frontend: Flutter
+#🚀 Tech Stack
+#Frontend: Flutter
 
 Backend: Firebase (Firestore, Auth, FCM)
 
