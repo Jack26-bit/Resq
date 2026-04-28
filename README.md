@@ -1,102 +1,73 @@
-ResQ — AI-Powered Disaster Response System
+# ResQ — AI-Powered Disaster Response System
 
-
-
-
-
-
-🌍 Overview
-ResQ is an intelligent disaster response platform designed to function even when networks fail.
+🌍 **Overview**  
+ResQ is an intelligent disaster response platform designed to function even when networks fail.  
 It combines AI, offline mesh networking, and real-time emergency coordination to provide a reliable lifeline during critical situations.
 
 ⚡ Built for real-world emergencies: disasters, blackouts, war zones, and no-signal environments.
 
-🚨 Core Features
-🔴 Panic-Ping (SOS System)
-One-tap emergency trigger
+## 🚨 Core Features
 
-Sends:
+### 🔴 Panic-Ping (SOS System)
+- One-tap emergency trigger
+- Sends:
+  - 📍 Location
+  - 📸 Images / 🎥 Video
+  - ⚠️ Emergency type (Medical, Fire, Structural, Trapped)
+- AI-assisted detection (ML Kit)
+- Works online + offline
 
-📍 Location
+### 📡 Offline Mesh Network
+- Peer-to-peer communication (Nearby Connections)
+- No internet required
+- Forms a local emergency communication network
 
-📸 Images / 🎥 Video
+### 🧠 AI Assistance
+- Smart object detection (ML Kit)
+- Context-aware emergency guidance
+- Voice + text interaction
 
-⚠️ Emergency type (Medical, Fire, Structural, Trapped)
+### 🎙️ Voice Agent
+- Hands-free emergency interaction
+- Calm AI responses (ElevenLabs integration)
+- Designed for panic scenarios
 
-AI-assisted detection (ML Kit)
+### 🗺️ Tactical Map System
+- Online: Live maps & updates
+- Offline: Grid-based fallback
+- Shows:
+  - Safe zones
+  - Nearby responders
+  - Active SOS signals
 
-Works online + offline
+### ⚔️ Disaster & War Modes
+- Predefined emergency protocols
+- Optimized UI for high-risk environments
 
-📡 Offline Mesh Network
-Peer-to-peer communication (Nearby Connections)
+### 🤝 Community Response
+- Peer-to-peer assistance
+- Nearby responders
+- Decentralized rescue coordination
 
-No internet required
+## 📱 App Screens
 
-Forms a local emergency communication network
+- `/` → Signup / Login
+- `/home` → Dashboard
+- `/sos` → SOS Report
+- `/map` → Tactical Map
+- `/community` → Community Help
+- `/local` → Local Incidents
+- `/disaster` → Disaster Mode
+- `/war` → War Mode
+- `/mesh` → Offline Mesh Chat
 
-🧠 AI Assistance
-Smart object detection (ML Kit)
+## 🧠 Architecture
 
-Context-aware emergency guidance
-
-Voice + text interaction
-
-🎙️ Voice Agent
-Hands-free emergency interaction
-
-Calm AI responses (ElevenLabs integration)
-
-Designed for panic scenarios
-
-🗺️ Tactical Map System
-Online: Live maps & updates
-
-Offline: Grid-based fallback
-
-Shows:
-
-Safe zones
-
-Nearby responders
-
-Active SOS signals
-
-⚔️ Disaster & War Modes
-Predefined emergency protocols
-
-Optimized UI for high-risk environments
-
-🤝 Community Response
-Peer-to-peer assistance
-
-Nearby responders
-
-Decentralized rescue coordination
-
-📱 App Screens
-/ → Signup / Login
-
-/home → Dashboard
-
-/sos → SOS Report
-
-/map → Tactical Map
-
-/community → Community Help
-
-/local → Local Incidents
-
-/disaster → Disaster Mode
-
-/war → War Mode
-
-/mesh → Offline Mesh Chat
-
-#🧠 Architecture
+```text
             ┌────────────────────────────┐
             │        ResQ App UI         │
-            │  (SOS, Map, Mesh, AI UI)  │
-            └────────────┬──────────────┘
+            │  (SOS, Map, Mesh, AI UI)   │
+            └────────────┬───────────────┘
                          │
          ┌───────────────┼────────────────┐
          │               │                │
@@ -113,100 +84,109 @@ Decentralized rescue coordination
           │ Firestore    │  │ APIs         │
           │ Auth + FCM   │  │ Maps/Weather │
           └──────────────┘  └──────────────┘
-#🚀 Tech Stack
-#Frontend: Flutter
+```
 
-Backend: Firebase (Firestore, Auth, FCM)
+## 🚀 Tech Stack
 
-AI: Google Gemini + ML Kit
+- **Frontend:** Flutter
+- **Backend:** Firebase (Firestore, Auth, FCM)
+- **AI:** Google Gemini + ML Kit
+- **Voice AI:** ElevenLabs
+- **Connectivity:** Nearby Connections (P2P Mesh)
+- **APIs:** Google Maps, Weather, Solar
 
-Voice AI: ElevenLabs
+## ⚙️ How to Run the Project
 
-Connectivity: Nearby Connections (P2P Mesh)
+### 1️⃣ Install Dependencies
 
-APIs: Google Maps, Weather, Solar
-
-⚙️ How to Run the Project
-1️⃣ Install Dependencies
+```bash
 flutter pub get
-2️⃣ Run the App
+```
+
+### 2️⃣ Run the App
+
+```bash
 flutter devices
 
 flutter run -d chrome
 flutter run -d emulator-5554
 flutter run -d iPhone
-3️⃣ Build APK (IMPORTANT)
+```
+
+### 3️⃣ Build APK (IMPORTANT)
+
+```bash
 flutter build apk --release
+```
+
 📦 Output file:
 
+```text
 build/app/outputs/flutter-apk/app-release.apk
+```
+
 👉 Use this APK for:
+- Demo submission
+- Judge testing
+- Direct installation
 
-Demo submission
+### 4️⃣ Run Web Version (Optional)
 
-Judge testing
-
-Direct installation
-
-4️⃣ Run Web Version (Optional)
+```bash
 flutter build web
 cd build/web
 python3 -m http.server 8080
+```
+
 Open:
 
+```text
 http://localhost:8080
-📦 Dependencies
-google_fonts
+```
 
-flutter_animate
+## 📦 Dependencies
 
-google_maps_flutter
+- `google_fonts`
+- `flutter_animate`
+- `google_maps_flutter`
+- `firebase_core`
+- `nearby_connections`
+- `cryptography`
+- `uuid`
+- `shared_preferences`
 
-firebase_core
+## 🌐 Connectivity Behavior
 
-nearby_connections
+| Feature | Online | Offline |
+|---|---|---|
+| SOS | Cloud sync | Mesh broadcast |
+| AI | Advanced | Basic/local |
+| Maps | Full maps | Grid fallback |
+| Communication | Internet | P2P |
 
-cryptography
+## 🎨 Design System
 
-uuid
+- **Background:** `#131313`
+- **Primary:** `#FFFFFF`
+- **Accent:** Cyan / Teal
+- **Error:** `#FFB4AB`
+- **Fonts:**
+  - SpaceGrotesk (Headlines)
+  - Inter (Body)
 
-shared_preferences
+## 🏆 Why ResQ Stands Out
 
-🌐 Connectivity Behavior
-Feature	Online	Offline
-SOS	Cloud sync	Mesh broadcast
-AI	Advanced	Basic/local
-Maps	Full maps	Grid fallback
-Communication	Internet	P2P
-🎨 Design System
-Background: #131313
+- Works without internet
+- Real-time Panic-Ping emergency system
+- Combines AI + Voice + Mesh Networking
+- Built using Google technologies
+- Designed for real disaster survival
 
-Primary: #FFFFFF
+## ⚠️ Disclaimer
 
-Accent: Cyan / Teal
-
-Error: #FFB4AB
-
-Fonts:
-
-SpaceGrotesk (Headlines)
-
-Inter (Body)
-
-🏆 Why ResQ Stands Out
-Works without internet
-
-Real-time Panic-Ping emergency system
-
-Combines AI + Voice + Mesh Networking
-
-Built using Google technologies
-
-Designed for real disaster survival
-
-⚠️ Disclaimer
-ResQ provides AI-assisted guidance and emergency communication tools.
+ResQ provides AI-assisted guidance and emergency communication tools.  
 Always follow official emergency services when available.
 
-🧠 Tagline
+## 🧠 Tagline
+
 “Intelligence that survives.”
