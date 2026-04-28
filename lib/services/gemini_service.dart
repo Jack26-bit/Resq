@@ -3,11 +3,18 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  late final GenerativeModel _model;
-  late final ChatSession _chatSession;
+  final String _apiKey;
+  final GenerativeModel? _model;
+  final ChatSession? _chatSession;
 
   GeminiService() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    _apiKey = dotenv.env['GEMINI_API_KEY']?.trim() ?? '';
+
+    if (_apiKey.isEmpty) {
+      _model = null;
+      _chatSession = null;
+      return;
+    }
 
     // The system instructions force the model to behave as ECHO AI, tailored for disaster response.
     final safetySettings = [
@@ -19,7 +26,7 @@ class GeminiService {
 
     _model = GenerativeModel(
       model: 'gemini-1.5-flash',
-      apiKey: apiKey,
+      apiKey: _apiKey,
       safetySettings: safetySettings,
       systemInstruction: Content.system(
         'You are ECHO AI, an advanced, tactical disaster response assistant. '
@@ -33,6 +40,10 @@ class GeminiService {
   }
 
   Future<String> sendMessage(String text) async {
+    if (_apiKey.isEmpty || _chatSession == null) {
+      return 'AI features require a configured API key.';
+    }
+
     try {
       final response = await _chatSession.sendMessage(Content.text(text));
       return response.text?.trim() ?? 'I was unable to process that request. Please rephrase your emergency.';
@@ -42,6 +53,10 @@ class GeminiService {
   }
 
   Future<String> analyzeImage(Uint8List imageBytes, String mimeType) async {
+    if (_apiKey.isEmpty || _model == null) {
+      return 'AI features require a configured API key.';
+    }
+
     try {
       final prompt = TextPart('Analyze this image from a disaster/emergency perspective. Provide a brief tactical summary of what is visible, highlighting any hazards, resources, or critical situations.');
       final imagePart = DataPart(mimeType, imageBytes);
