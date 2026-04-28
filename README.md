@@ -1,69 +1,212 @@
-# ECHO — Flutter App
+ResQ — AI-Powered Disaster Response System
 
-Dark-themed disaster response app with 8 screens matching the Stitch/ECHO design.
 
-## Screens
-- `/` → Signup/Login
-- `/home` → Dashboard (SOS hero, family safety, local grid map, diagnostics)
-- `/sos` → SOS Report form
-- `/map` → Live Tactical Map
-- `/community` → Peer Portal (community help)
-- `/local` → Local Incidents Dashboard
-- `/disaster` → Disaster Mode Protocol
-- `/war` → War Mode Protocol
-- `/mesh` → Offline Mesh Chat (Decentralized P2P bluetooth messaging)
 
-## Setup
 
-### 1. Install dependencies
-```bash
+
+
+🌍 Overview
+ResQ is an intelligent disaster response platform designed to function even when networks fail.
+It combines AI, offline mesh networking, and real-time emergency coordination to provide a reliable lifeline during critical situations.
+
+⚡ Built for real-world emergencies: disasters, blackouts, war zones, and no-signal environments.
+
+🚨 Core Features
+🔴 Panic-Ping (SOS System)
+One-tap emergency trigger
+
+Sends:
+
+📍 Location
+
+📸 Images / 🎥 Video
+
+⚠️ Emergency type (Medical, Fire, Structural, Trapped)
+
+AI-assisted detection (ML Kit)
+
+Works online + offline
+
+📡 Offline Mesh Network
+Peer-to-peer communication (Nearby Connections)
+
+No internet required
+
+Forms a local emergency communication network
+
+🧠 AI Assistance
+Smart object detection (ML Kit)
+
+Context-aware emergency guidance
+
+Voice + text interaction
+
+🎙️ Voice Agent
+Hands-free emergency interaction
+
+Calm AI responses (ElevenLabs integration)
+
+Designed for panic scenarios
+
+🗺️ Tactical Map System
+Online: Live maps & updates
+
+Offline: Grid-based fallback
+
+Shows:
+
+Safe zones
+
+Nearby responders
+
+Active SOS signals
+
+⚔️ Disaster & War Modes
+Predefined emergency protocols
+
+Optimized UI for high-risk environments
+
+🤝 Community Response
+Peer-to-peer assistance
+
+Nearby responders
+
+Decentralized rescue coordination
+
+📱 App Screens
+/ → Signup / Login
+
+/home → Dashboard
+
+/sos → SOS Report
+
+/map → Tactical Map
+
+/community → Community Help
+
+/local → Local Incidents
+
+/disaster → Disaster Mode
+
+/war → War Mode
+
+/mesh → Offline Mesh Chat
+
+🧠 Architecture
+            ┌────────────────────────────┐
+            │        ResQ App UI         │
+            │  (SOS, Map, Mesh, AI UI)  │
+            └────────────┬──────────────┘
+                         │
+         ┌───────────────┼────────────────┐
+         │               │                │
+         ▼               ▼                ▼
+ ┌────────────┐  ┌──────────────┐  ┌──────────────┐
+ │ ML Kit AI  │  │ Mesh Network │  │ Voice Agent  │
+ │ Detection  │  │ (P2P Nearby) │  │ (ElevenLabs) │
+ └────────────┘  └──────────────┘  └──────────────┘
+         │               │                │
+         └───────┬───────┴───────┬────────┘
+                 ▼               ▼
+          ┌──────────────┐  ┌──────────────┐
+          │ Firebase     │  │ Google Cloud │
+          │ Firestore    │  │ APIs         │
+          │ Auth + FCM   │  │ Maps/Weather │
+          └──────────────┘  └──────────────┘
+🚀 Tech Stack
+Frontend: Flutter
+
+Backend: Firebase (Firestore, Auth, FCM)
+
+AI: Google Gemini + ML Kit
+
+Voice AI: ElevenLabs
+
+Connectivity: Nearby Connections (P2P Mesh)
+
+APIs: Google Maps, Weather, Solar
+
+⚙️ How to Run the Project
+1️⃣ Install Dependencies
 flutter pub get
-```
-
-### 2. Run on device / emulator
-```bash
-# See connected devices
+2️⃣ Run the App
 flutter devices
 
-# Run on Chrome (web)
 flutter run -d chrome
-
-# Run on Android emulator
 flutter run -d emulator-5554
-
-# Run on iOS simulator
 flutter run -d iPhone
-```
-
-### 3. Build APK
-```bash
+3️⃣ Build APK (IMPORTANT)
 flutter build apk --release
-```
+📦 Output file:
 
-### 4. Build for web (localhost)
-```bash
+build/app/outputs/flutter-apk/app-release.apk
+👉 Use this APK for:
+
+Demo submission
+
+Judge testing
+
+Direct installation
+
+4️⃣ Run Web Version (Optional)
 flutter build web
 cd build/web
 python3 -m http.server 8080
-# Open: http://localhost:8080
-```
+Open:
 
-## Dependencies
-The app relies on the following core packages (check `pubspec.yaml` for the full list):
-- `google_fonts: ^6.2.1`
-- `flutter_animate: ^4.5.0`
-- `google_maps_flutter: ^2.17.0`
-- `firebase_core: ^3.13.0`
-- `nearby_connections: ^4.3.0` (for Offline Mesh Networking)
-- `cryptography: ^2.9.0`
-- `uuid: ^4.5.3`
-- `shared_preferences: ^2.5.5`
+http://localhost:8080
+📦 Dependencies
+google_fonts
 
-Run `flutter pub get` after cloning the repository.
+flutter_animate
 
-## Design Notes
-- Background: `#131313`
-- Primary: `#FFFFFF`
-- Error: `#FFB4AB` / Error Container: `#93000A`
-- Fonts: SpaceGrotesk (headlines) + Inter (body)
-- All maps are `CustomPaint` grids (no map API key needed)
+google_maps_flutter
+
+firebase_core
+
+nearby_connections
+
+cryptography
+
+uuid
+
+shared_preferences
+
+🌐 Connectivity Behavior
+Feature	Online	Offline
+SOS	Cloud sync	Mesh broadcast
+AI	Advanced	Basic/local
+Maps	Full maps	Grid fallback
+Communication	Internet	P2P
+🎨 Design System
+Background: #131313
+
+Primary: #FFFFFF
+
+Accent: Cyan / Teal
+
+Error: #FFB4AB
+
+Fonts:
+
+SpaceGrotesk (Headlines)
+
+Inter (Body)
+
+🏆 Why ResQ Stands Out
+Works without internet
+
+Real-time Panic-Ping emergency system
+
+Combines AI + Voice + Mesh Networking
+
+Built using Google technologies
+
+Designed for real disaster survival
+
+⚠️ Disclaimer
+ResQ provides AI-assisted guidance and emergency communication tools.
+Always follow official emergency services when available.
+
+🧠 Tagline
+“Intelligence that survives.”
