@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
   late final String _apiKey;
@@ -9,8 +8,8 @@ class GeminiService {
   late final ChatSession? _chatSession;
 
   GeminiService() {
-    _apiKey = dotenv.env['GEMINI_API_KEY']?.trim() ?? '';
-    final configuredModel = dotenv.env['GEMINI_MODEL']?.trim() ?? '';
+    _apiKey = const String.fromEnvironment('GEMINI_API_KEY').trim();
+    final configuredModel = const String.fromEnvironment('GEMINI_MODEL').trim();
     _modelId = configuredModel.isNotEmpty ? configuredModel : 'gemini-2.5-flash';
 
     if (_apiKey.isEmpty) {

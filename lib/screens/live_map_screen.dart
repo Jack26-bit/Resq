@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import '../theme/colors.dart';
@@ -27,6 +28,30 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
   Position? _currentPosition;
   StreamSubscription<Position>? _positionStream;
   bool _isLoadingLocation = true;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _sosMarkers;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _recentSos;
+
+  Future<void> _listenForSos() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    Query<Map<String, dynamic>> reports =
+        FirebaseFirestore.instance.collection('sos_reports');
+    var isResponder = false;
+    try {
+      isResponder = (await user.getIdTokenResult()).claims?['responder'] == true;
+    } catch (error) {
+      debugPrint('Could not load SOS map permissions: $error');
+    }
+    if (!isResponder) reports = reports.where('ownerUid', isEqualTo: user.uid);
+    if (!mounted) return;
+
+    setState(() {
+      _sosMarkers = reports.snapshots();
+      _recentSos = reports.orderBy('timestamp', descending: true).limit(5).snapshots();
+    });
+  }
+
 
   static const String _mapStyle = '''
 [
@@ -56,6 +81,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
+    unawaited(_listenForSos());
     _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
     _sheet = AnimationController(vsync: this, duration: const Duration(milliseconds: 300), value: 1.0);
     _initLocation();
@@ -182,7 +208,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
               children: [
                 Positioned.fill(
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('sos_reports').snapshots(),
+                    stream: _sosMarkers,
                     builder: (context, snapshot) {
                       Set<Marker> firestoreMarkers = {};
                       if (snapshot.hasData) {
@@ -413,7 +439,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('sos_reports').orderBy('timestamp', descending: true).limit(5).snapshots(),
+        stream: _recentSos,
         builder: (context, snapshot) {
           final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
           return Column(
@@ -431,13 +457,15 @@ class _LiveMapScreenState extends State<LiveMapScreen> with TickerProviderStateM
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: C.surfaceHighest, borderRadius: BorderRadius.circular(20)),
-                    child: Text('$count NEARBY', style: const TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 10, letterSpacing: 1.5, color: Colors.white)),
+                    child: Text('$count REPORTS', style: const TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 10, letterSpacing: 1.5, color: Colors.white)),
                   ),
                 ],
               ),
               if (_isAlertsExpanded) ...[
                 const SizedBox(height: 16),
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+                if (snapshot.hasError)
+                  const Text('Could not load SOS reports.', style: TextStyle(color: C.onSurfaceVar))
+                else if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
                    const Text('No active alerts.', style: TextStyle(color: C.onSurfaceVar)),
                 if (snapshot.hasData)
                   ...snapshot.data!.docs.map((doc) {

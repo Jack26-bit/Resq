@@ -31,16 +31,17 @@ dependencies:
   path_provider: ^2.1.5
   connectivity_plus: ^7.1.1
   nearby_connections: ^4.3.0
-  flutter_dotenv: ^6.0.1
   cryptography: ^2.9.0
   uuid: ^4.5.3
   shared_preferences: ^2.5.5
   path: ^1.9.0
+  web: ^1.1.1
   webview_flutter_web: ^0.2.3
   webview_flutter_android: ^4.3.0
   webview_flutter_wkwebview: ^3.16.0
   webview_flutter_platform_interface: ^2.10.0
   geolocator: ^13.0.2
+  firebase_storage: ^12.4.10
 
 dev_dependencies:
   flutter_test:
@@ -57,5 +58,4 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - assets/.env
     - assets/images/

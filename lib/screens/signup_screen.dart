@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../core/platform/bluetooth_mesh_support.dart';
 import '../theme/colors.dart';
@@ -29,7 +29,9 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _checkAlreadyLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     final uid = prefs.getString('user_uid');
-    if (uid != null && uid.isNotEmpty && mounted) {
+    if (uid == null || uid.isEmpty) return;
+    final user = await FirebaseAuth.instance.authStateChanges().first;
+    if (uid == user?.uid && mounted) {
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }
@@ -76,9 +78,10 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _loading = true);
 
     try {
-      // Generate a stable user ID for this device
       final prefs = await SharedPreferences.getInstance();
-      String uid = prefs.getString('user_uid') ?? const Uuid().v4();
+      final auth = FirebaseAuth.instance;
+      final user = auth.currentUser ?? (await auth.signInAnonymously()).user!;
+      final uid = user.uid;
 
       // Save user profile to Firestore
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
@@ -112,32 +115,6 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } finally {
       if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  Future<void> _handleLogIn() async {
-    // "Log in" just re-uses the locally persisted UID
-    final prefs = await SharedPreferences.getInstance();
-    final uid = prefs.getString('user_uid');
-    if (uid != null && uid.isNotEmpty) {
-      // Update lastSeen in Firestore
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update({'lastSeen': FieldValue.serverTimestamp()});
-
-      await _requestPermissions();
-
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('No existing account found. Please sign up.')),
-        );
-      }
     }
   }
 

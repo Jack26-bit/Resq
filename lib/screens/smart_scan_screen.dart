@@ -166,7 +166,7 @@ class _SmartScanScreenState extends State<SmartScanScreen>
       ]);
 
       final items = results[0] as List<DetectedItem>;
-      final labels = results[1];
+      final labels = results[1] as List<ImageLabel>;
 
       if (!mounted) return;
       setState(() {

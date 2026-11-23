@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
 import 'package:geolocator/geolocator.dart';
 import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'smart_scan_screen.dart';
 import '../services/offline_mesh_service.dart';
@@ -738,68 +742,88 @@ class _SosScreenState extends State<SosScreen>
   }
 
   Future<void> _submitSOS() async {
+    if (_isSending) return;
     setState(() => _isSending = true);
 
     try {
-      final docData = {
-        'timestamp': FieldValue.serverTimestamp(),
+      final user = FirebaseAuth.instance.currentUser;
+      final position = _currentPosition;
+      final data = {
+        'ownerUid': user?.uid,
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
         'description': _desc.text,
         'criticality': _selected,
-        'location': {
-          'latitude': _currentPosition?.latitude ?? 34.0522, // Fallback to mocked for MVP if null
-          'longitude': _currentPosition?.longitude ?? -118.2437,
-        },
-        'media_attachments': _mediaFiles.map((f) => f.name).toList(),
+        'location': position == null
+            ? null
+            : {'latitude': position.latitude, 'longitude': position.longitude},
         'ml_scan_data': _hasScanData && _scanResults != null
-            ? {
-                'summary': _scanResults!.summary,
-                'log': _scanResults!.log,
-              }
+            ? {'summary': _scanResults!.summary, 'log': _scanResults!.log}
             : null,
         'status': 'PENDING_RESPONSE',
       };
-
-      final offlineService = OfflineMeshService();
-      if (await offlineService.isOffline()) {
-        final localId = 'OFFLINE_${DateTime.now().millisecondsSinceEpoch}';
-        // Need to remove FieldValue.serverTimestamp() since JSON encode will fail on FieldValue
-        docData['timestamp'] = DateTime.now().toIso8601String(); 
-        await offlineService.queueSosReport(localId, docData);
-      } else {
-        await FirebaseFirestore.instance.collection('sos_reports').add(docData);
-        offlineService.syncOfflineData(); // Fire and forget sync
-      }
-
-      if (mounted) {
-        setState(() => _isSending = false);
-        _desc.clear();
-        setState(() {
-          _hasScanData = false;
-          _scanResults = null;
+      final files = <Map<String, String>>[];
+      const maxMediaBytes = 20 * 1024 * 1024;
+      var totalBytes = 0;
+      for (final file in List<XFile>.of(_mediaFiles)) {
+        totalBytes += await file.length();
+        if (totalBytes > maxMediaBytes) {
+          throw StateError('Attachments must total 20 MB or less.');
+        }
+        final name = file.name.toLowerCase();
+        final contentType = file.mimeType ??
+            switch (name.split('.').last) {
+              'mp4' || 'm4v' => 'video/mp4',
+              'mov' => 'video/quicktime',
+              'webm' => 'video/webm',
+              'png' => 'image/png',
+              'heic' => 'image/heic',
+              'heif' => 'image/heif',
+              'webp' => 'image/webp',
+              'gif' => 'image/gif',
+              'jpg' || 'jpeg' => 'image/jpeg',
+              _ => throw StateError('Unsupported attachment type: ${file.name}'),
+            };
+        files.add({
+          'name': file.name,
+          'contentType': contentType,
+          'bytes': base64Encode(await file.readAsBytes()),
         });
-        _showSent(context);
       }
-    } catch (e) {
+
+      final service = OfflineMeshService();
+      await service.queueSosReport(const Uuid().v4(), {
+        ...data,
+        'queuedMedia': files,
+      });
+      unawaited(service.syncOfflineData());
+      unawaited(service.broadcastSos(data));
+
+      if (!mounted) return;
+      setState(() {
+        _desc.clear();
+        _mediaFiles.clear();
+        _hasScanData = false;
+        _scanResults = null;
+      });
+      _showQueued(context, hasLocation: position != null);
+    } catch (error) {
       if (mounted) {
-        setState(() => _isSending = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send SOS: $e'),
+            content: Text('Could not save SOS: $error'),
             backgroundColor: C.error,
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
-  void _showSent(BuildContext context) {
-    // Build the detail message
-    String detail =
-        'Your emergency signal has been sent to tactical command. A response team is being dispatched to your location.';
-    if (_hasScanData && _scanResults != null) {
-      detail +=
-          '\n\nML Kit detected ${_scanResults!.detections.length} object(s) in your environment. This data has been included in your report.';
-    }
+  void _showQueued(BuildContext context, {required bool hasLocation}) {
+    final detail = 'Your SOS was saved on this device. ResQ will retry '
+        'sending it while the app is open. Delivery has not been confirmed.'
+        '${hasLocation ? '' : '\n\nGPS location was unavailable.'}';
 
     showDialog(
       context: context,
@@ -807,7 +831,7 @@ class _SosScreenState extends State<SosScreen>
         backgroundColor: C.surfaceMid,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
-          'SOS TRANSMITTED',
+          'SOS SAVED',
           style: TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontWeight: FontWeight.w900,

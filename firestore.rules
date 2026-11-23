@@ -1,30 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if true;
+    function signedIn() {
+      return request.auth != null;
     }
-    match /sos_reports/{doc} {
-      allow read, write: if true;
+
+    function responder() {
+      return signedIn() && request.auth.token.get('responder', false) == true;
     }
-    match /alerts/{doc} {
-      allow read, write: if true;
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
-    match /global_broadcasts/{doc} {
-      allow read, write: if true;
+
+    match /users/{uid} {
+      allow get, create, update: if isOwner(uid);
+
+      match /family/{member} {
+        allow read, write: if isOwner(uid);
+      }
     }
-    match /safe_zones/{doc} {
-      allow read, write: if true;
+
+    match /sos_reports/{report} {
+      allow read: if responder() || isOwner(resource.data.get('ownerUid', ''));
+      allow create: if isOwner(request.resource.data.ownerUid)
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.status == 'PENDING_RESPONSE';
+      allow update: if (isOwner(resource.data.get('ownerUid', ''))
+          && (request.resource.data == resource.data
+            || (request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['media_attachments'])
+              && request.resource.data.media_attachments is list)))
+        || (responder() && request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(['status']));
     }
-    match /community/{doc} {
-      allow read, write: if true;
-    }
-    match /incidents/{doc} {
-      allow read, write: if true;
-    }
-    match /{document=**} {
-      allow read: if true;
-      allow write: if false;
+
+    match /{collection}/{doc} {
+      allow read: if signedIn()
+        && collection in ['alerts', 'global_broadcasts', 'safe_zones', 'community', 'incidents'];
+      allow write: if responder()
+        && collection in ['alerts', 'global_broadcasts', 'safe_zones', 'community', 'incidents', 'posts'];
     }
   }
 }

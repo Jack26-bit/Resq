@@ -5,7 +5,6 @@ import '../theme/colors.dart';
 import '../widgets/shared.dart';
 import '../widgets/app_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -19,7 +18,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   Future<List<dynamic>> fetchCrisisNews() async {
     try {
-      final apiKey = dotenv.env['NEWS_API_KEY'] ?? '';
+      const apiKey = String.fromEnvironment('NEWS_API_KEY');
+      if (apiKey.isEmpty) return [];
       final response = await http.get(Uri.parse(
           'https://newsapi.org/v2/everything?q=emergency+India&apiKey=$apiKey'));
       if (response.statusCode == 200) {

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:webview_flutter_web/webview_flutter_web.dart';
+import 'core/platform/webview_registration.dart'
+    if (dart.library.js_interop) 'core/platform/webview_registration_web.dart';
 import 'firebase_options.dart';
 import 'theme/colors.dart';
 import 'screens/signup_screen.dart';
@@ -20,7 +20,7 @@ import 'screens/mesh_chat_screen.dart';
 import 'screens/war_screen.dart';
 import 'widgets/shared.dart';
 import 'widgets/app_drawer.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'services/offline_mesh_service.dart';
 import 'widgets/global_ai_fab.dart';
 import 'screens/local_incidents_screen.dart';
 import 'screens/disaster_screen.dart';
@@ -31,14 +31,12 @@ final GlobalKey<NavigatorState> globalNavigatorKey =
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (kIsWeb) {
-    WebViewPlatform.instance = WebWebViewPlatform();
-  }
-  await dotenv.load(fileName: "assets/.env");
+  registerWebView();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await IdentityManager().initialize();
+  OfflineMeshService().start();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,

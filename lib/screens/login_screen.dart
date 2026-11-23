@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/colors.dart';
 import '../widgets/ui_kit.dart';
 
@@ -27,40 +28,22 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final uid = prefs.getString('user_uid');
-
-      if (uid != null && uid.isNotEmpty) {
-        // Update lastSeen and go to home
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null &&
+          uid == prefs.getString('user_uid') &&
+          phone == prefs.getString('user_phone')) {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
             .update({'lastSeen': FieldValue.serverTimestamp()});
-
         if (mounted) Navigator.of(context).pushReplacementNamed('/home');
         return;
-      }
-
-      // If no local uid, attempt to find by phone in Firestore
-      final q = await FirebaseFirestore.instance
-          .collection('users')
-          .where('phone', isEqualTo: phone)
-          .limit(1)
-          .get();
-
-      if (q.docs.isNotEmpty) {
-        final foundUid = q.docs.first['uid'] as String?;
-        if (foundUid != null && foundUid.isNotEmpty) {
-          await prefs.setString('user_uid', foundUid);
-          await prefs.setString('user_phone', phone);
-          if (mounted) Navigator.of(context).pushReplacementNamed('/home');
-          return;
-        }
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No account found. Please sign up.'),
+            content: Text('No matching profile on this device. Please sign up.'),
             backgroundColor: C.error,
           ),
         );
